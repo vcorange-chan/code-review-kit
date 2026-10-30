@@ -1,0 +1,538 @@
+{
+  "schema_version": 1,
+  "evidence_hash": "3a8b5f5cb8f349a50af6390385ab4bba4921f9d84a13a82c43d5f28c6d41b2ff",
+  "cards": {
+    "business::stage_1": {
+      "title": "接收文档",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "接收文档",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "步骤失败",
+          "state": "停止流水线",
+          "items": [
+            {
+              "condition": "输入包含 error_1 或为空",
+              "returns": "Err(\"accept failed\")",
+              "handling": "返回错误，不执行后续步骤"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "2804532cf820435ddbf883f0efe10afda32059f4aea0b8704cc4b18e1ebd0179"
+    },
+    "business::stage_2": {
+      "title": "读取来源",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "读取来源",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "步骤失败",
+          "state": "停止流水线",
+          "items": [
+            {
+              "condition": "输入包含 error_2 或为空",
+              "returns": "Err(\"open_source failed\")",
+              "handling": "返回错误，不执行后续步骤"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "5eaeac797036382b9dca5304fc52a30ff23008f62b04a530343fb5c5761f0fc1"
+    },
+    "business::stage_3": {
+      "title": "解码内容",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "解码内容",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "步骤失败",
+          "state": "停止流水线",
+          "items": [
+            {
+              "condition": "输入包含 error_3 或为空",
+              "returns": "Err(\"decode failed\")",
+              "handling": "返回错误，不执行后续步骤"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "403bf62aca2bae0042aff0f6cb42b6a2cdf3df60bbbcb50d4b59d5f1d0b84be7"
+    },
+    "business::stage_4": {
+      "title": "解析文档",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "解析文档",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "步骤失败",
+          "state": "停止流水线",
+          "items": [
+            {
+              "condition": "输入包含 error_4 或为空",
+              "returns": "Err(\"parse failed\")",
+              "handling": "返回错误，不执行后续步骤"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "695e8379b5e56a795d9b700e7e38e3054504385221d2808c4bcde802c7859339"
+    },
+    "business::stage_5": {
+      "title": "拆分段落",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "拆分段落",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "步骤失败",
+          "state": "停止流水线",
+          "items": [
+            {
+              "condition": "输入包含 error_5 或为空",
+              "returns": "Err(\"split failed\")",
+              "handling": "返回错误，不执行后续步骤"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "22a4e55243b66ee83eafda657d1c6aa7bd0877a460b13decab30937915a5449b"
+    },
+    "business::stage_6": {
+      "title": "可选清理",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "可选清理",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "optional",
+          "kind": "degrade",
+          "title": "可选处理不可用",
+          "state": "保留前一步结果",
+          "items": [
+            {
+              "condition": "输入包含 error_6 或为空",
+              "returns": "Err(\"clean failed\")",
+              "handling": "保留原值并继续"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "b9d404b5e650c628970865b2fe42b9d4dd600b26cc6b1f95af8e69917cc6aa85"
+    },
+    "business::stage_7": {
+      "title": "可选复核",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "可选复核",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "optional",
+          "kind": "degrade",
+          "title": "可选处理不可用",
+          "state": "保留前一步结果",
+          "items": [
+            {
+              "condition": "输入包含 error_7 或为空",
+              "returns": "Err(\"review failed\")",
+              "handling": "保留原值并继续"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "be9b9f1b8ce7d9ccb36e36d7dd00c49c2189a6055e0e294829ce9dda2bd04e3a"
+    },
+    "business::stage_8": {
+      "title": "可选标注",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "可选标注",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "optional",
+          "kind": "degrade",
+          "title": "可选处理不可用",
+          "state": "保留前一步结果",
+          "items": [
+            {
+              "condition": "输入包含 error_8 或为空",
+              "returns": "Err(\"annotate failed\")",
+              "handling": "保留原值并继续"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "9701dc3e6861f4971eb7496be579c6d9d06d1a15c7e60744a0096ec2b67ea8c4"
+    },
+    "business::stage_9": {
+      "title": "可选翻译",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "可选翻译",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "optional",
+          "kind": "degrade",
+          "title": "可选处理不可用",
+          "state": "保留前一步结果",
+          "items": [
+            {
+              "condition": "输入包含 error_9 或为空",
+              "returns": "Err(\"translate failed\")",
+              "handling": "保留原值并继续"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "15693b9da015fc547bebb9a96c8e09a3584170d5c85f160eadb315a1127b2217"
+    },
+    "business::stage_10": {
+      "title": "可选预览",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "可选预览",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "optional",
+          "kind": "degrade",
+          "title": "可选处理不可用",
+          "state": "保留前一步结果",
+          "items": [
+            {
+              "condition": "输入包含 error_10 或为空",
+              "returns": "Err(\"preview failed\")",
+              "handling": "保留原值并继续"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "f13ebaac2dd2449dfbf05acd83c95e2f60e8799305888de0f5d6749765f8c587"
+    },
+    "business::stage_11": {
+      "title": "提交结果",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "提交结果",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "步骤失败",
+          "state": "停止流水线",
+          "items": [
+            {
+              "condition": "输入包含 error_11 或为空",
+              "returns": "Err(\"commit failed\")",
+              "handling": "返回错误，不执行后续步骤"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "1cd34e28ba7bda00cfd1719146ab48f1e345506640da668433dd965854aada60"
+    },
+    "business::stage_12": {
+      "title": "汇总批次",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "汇总批次",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "步骤失败",
+          "state": "停止流水线",
+          "items": [
+            {
+              "condition": "输入包含 error_12 或为空",
+              "returns": "Err(\"collect failed\")",
+              "handling": "返回错误，不执行后续步骤"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "5d2e16a7f3c8b49c07b3c49e4b94bc4f4368cd488e60b06e73ebf138a47bbca6"
+    },
+    "business::stage_13": {
+      "title": "完成任务",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "完成任务",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "继续下一阶段",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "步骤失败",
+          "state": "停止流水线",
+          "items": [
+            {
+              "condition": "输入包含 error_13 或为空",
+              "returns": "Err(\"finish failed\")",
+              "handling": "返回错误，不执行后续步骤"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "f6489c29a17e3cf268ac3a04c5a1566a93f9e52413d75c148e6c3a06d0dead3f"
+    },
+    "business::stage_14": {
+      "title": "查看结果",
+      "scope": "合成文档工作流",
+      "input_title": "前一步文档值",
+      "inputs": [
+        "传入字符串，不访问文件或网络。"
+      ],
+      "output_title": "保留的文档值",
+      "outputs": [
+        "成功返回文档；可选步骤失败时由 run 保留旧值。"
+      ],
+      "steps": [
+        {
+          "title": "查看结果",
+          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+        }
+      ],
+      "state": "可读取最终结果",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "步骤失败",
+          "state": "停止流水线",
+          "items": [
+            {
+              "condition": "输入包含 error_14 或为空",
+              "returns": "Err(\"read_result failed\")",
+              "handling": "返回错误，不执行后续步骤"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
+      ],
+      "evidence_hash": "e8f7c87d9b54491753311e4bc5a0d020a29aa1030b615ca590b4fcc1850642a7"
+    }
+  }
+}

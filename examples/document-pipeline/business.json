@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "repository": ".",
+  "title": "文档导入 · 14 阶段示例",
+  "start_label": "提交文档",
+  "end_label": "文档已就绪",
+  "nodes": [
+    {
+      "id": "stage_1",
+      "label": "accept",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 2,
+          "end_line": 5,
+          "label": "接收文档实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_2",
+      "label": "open_source",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 6,
+          "end_line": 9,
+          "label": "读取来源实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_3",
+      "label": "decode",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 10,
+          "end_line": 13,
+          "label": "解码内容实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_4",
+      "label": "parse",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 14,
+          "end_line": 17,
+          "label": "解析文档实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_5",
+      "label": "split",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 18,
+          "end_line": 21,
+          "label": "拆分段落实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_6",
+      "label": "clean",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 22,
+          "end_line": 25,
+          "label": "可选清理实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_7",
+      "label": "review",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 26,
+          "end_line": 29,
+          "label": "可选复核实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_8",
+      "label": "annotate",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 30,
+          "end_line": 33,
+          "label": "可选标注实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_9",
+      "label": "translate",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 34,
+          "end_line": 37,
+          "label": "可选翻译实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_10",
+      "label": "preview",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 38,
+          "end_line": 41,
+          "label": "可选预览实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_11",
+      "label": "commit",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 42,
+          "end_line": 45,
+          "label": "提交结果实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_12",
+      "label": "collect",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 46,
+          "end_line": 49,
+          "label": "汇总批次实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_13",
+      "label": "finish",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 50,
+          "end_line": 53,
+          "label": "完成任务实现"
+        }
+      ]
+    },
+    {
+      "id": "stage_14",
+      "label": "read_result",
+      "sources": [
+        {
+          "file": "src/lib.rs",
+          "line": 54,
+          "end_line": 57,
+          "label": "查看结果实现"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "stage_1",
+      "to": "stage_2",
+      "kind": "success"
+    },
+    {
+      "from": "stage_2",
+      "to": "stage_3",
+      "kind": "success"
+    },
+    {
+      "from": "stage_3",
+      "to": "stage_4",
+      "kind": "success"
+    },
+    {
+      "from": "stage_4",
+      "to": "stage_5",
+      "kind": "success"
+    },
+    {
+      "from": "stage_5",
+      "to": "stage_6",
+      "kind": "success"
+    },
+    {
+      "from": "stage_6",
+      "to": "stage_7",
+      "kind": "success"
+    },
+    {
+      "from": "stage_7",
+      "to": "stage_8",
+      "kind": "success"
+    },
+    {
+      "from": "stage_8",
+      "to": "stage_9",
+      "kind": "success"
+    },
+    {
+      "from": "stage_9",
+      "to": "stage_10",
+      "kind": "success"
+    },
+    {
+      "from": "stage_10",
+      "to": "stage_11",
+      "kind": "success"
+    },
+    {
+      "from": "stage_11",
+      "to": "stage_12",
+      "kind": "success"
+    },
+    {
+      "from": "stage_12",
+      "to": "stage_13",
+      "kind": "success"
+    },
+    {
+      "from": "stage_13",
+      "to": "stage_14",
+      "kind": "success"
+    },
+    {
+      "from": "stage_6",
+      "to": "stage_6",
+      "kind": "resume",
+      "branch": "optional",
+      "port": "output",
+      "label": "保留原值，继续"
+    },
+    {
+      "from": "stage_7",
+      "to": "stage_7",
+      "kind": "resume",
+      "branch": "optional",
+      "port": "output",
+      "label": "保留原值，继续"
+    },
+    {
+      "from": "stage_8",
+      "to": "stage_8",
+      "kind": "resume",
+      "branch": "optional",
+      "port": "output",
+      "label": "保留原值，继续"
+    },
+    {
+      "from": "stage_9",
+      "to": "stage_9",
+      "kind": "resume",
+      "branch": "optional",
+      "port": "output",
+      "label": "保留原值，继续"
+    },
+    {
+      "from": "stage_10",
+      "to": "stage_10",
+      "kind": "resume",
+      "branch": "optional",
+      "port": "output",
+      "label": "保留原值，继续"
+    }
+  ]
+}

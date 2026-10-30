@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Review explanations v1",
+  "type": "object",
+  "required": ["schema_version", "cards"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "evidence_hash": {"type": "string"},
+    "cards": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "evidence_hash": {"type": "string"},
+          "title": {"type": "string"},
+          "scope": {"type": "string"},
+          "state": {"type": "string"},
+          "inputs": {"type": "array", "items": {"type": "string"}},
+          "outputs": {"type": "array", "items": {"type": "string"}},
+          "input": {"type": "string"},
+          "input_title": {"type": "string"},
+          "output_title": {"type": "string"},
+          "normal_output": {"type": "string"},
+          "steps": {
+            "type": "array",
+            "items": {"type": "object", "required": ["title", "detail"], "properties": {"title": {"type": "string"}, "detail": {"type": "string"}, "reference": {"type": "string"}}}
+          },
+          "errors": {
+            "type": "array",
+            "items": {"type": "object", "required": ["condition", "returns", "handling"], "properties": {"condition": {"type": "string"}, "returns": {"type": "string"}, "handling": {"type": "string"}, "side": {"enum": ["left", "right"]}}}
+          },
+          "notes": {"type": "array", "items": {"type": "string"}},
+          "branches": {
+            "type": "array",
+            "items": {"type": "object", "required": ["id", "kind", "items"], "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "kind": {"enum": ["error", "degrade"]},
+              "title": {"type": "string"}, "state": {"type": "string"},
+              "side": {"enum": ["left", "right"]},
+              "items": {"type": "array", "items": {"type": "object", "required": ["condition", "returns", "handling"], "properties": {
+                "condition": {"type": "string"}, "returns": {"type": "string"}, "handling": {"type": "string"}
+              }}}
+            }}
+          },
+          "references": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

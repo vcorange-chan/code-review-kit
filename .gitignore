@@ -1,0 +1,14 @@
+.deps/
+__pycache__/
+out/
+.cache/
+*.pyc
+.local/
+dist/
+build/
+*.egg-info/
+examples/*
+!examples/document-pipeline/
+VALIDATION.md
+tests/qa-*.mjs
+scripts/local-*.py

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Business review views v1",
+  "type": "object",
+  "required": ["schema_version", "nodes"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "repository": {"type": "string"}, "title": {"type": "string"},
+    "start_label": {"type": "string"}, "end_label": {"type": "string"},
+    "nodes": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["id", "sources"], "properties": {
+      "id": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
+      "label": {"type": "string"},
+      "sources": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["file", "line"], "properties": {
+        "file": {"type": "string"}, "line": {"type": "integer", "minimum": 1}, "end_line": {"type": "integer", "minimum": 1}, "label": {"type": "string"}
+      }}}
+    }}},
+    "edges": {"type": "array", "items": {"type": "object", "required": ["from", "to", "kind"], "properties": {
+      "from": {"type": "string"}, "to": {"type": "string"}, "kind": {"enum": ["success", "resume"]},
+      "branch": {"type": "string"}, "port": {"enum": ["input", "output"]}, "label": {"type": "string"}
+    }}}
+  }
+}

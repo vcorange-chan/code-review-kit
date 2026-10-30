@@ -1,0 +1,37 @@
+name: Check portable tool and skill
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.10', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: python -m pip install .
+      - run: code-review doctor
+      - run: python -m unittest discover -s tests -v
+      - run: node --check reviewkit/templates/review.js
+      - run: python scripts/build_dist.py
+      - run: python scripts/smoke_skill.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: skill-${{ matrix.os }}-${{ matrix.python }}
+          path: dist/code-review-kit-skill.zip
+  pi-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --global --ignore-scripts @earendil-works/pi-coding-agent
+      - run: pi install --local .
+      - run: pi list
