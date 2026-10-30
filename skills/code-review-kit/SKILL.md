@@ -7,6 +7,8 @@ metadata:
 
 # Code Review Kit
 
+Write a linear translation of code blocks into natural language, omitting syntax while retaining data changes and control flow. A reader should know who executes each block, what arrives, which condition selects each path, what changes, and where execution continues. Explain calls across files and the return point; a list of files or labels such as "validate input" is insufficient. Distinguish AI request interpretation, tool execution and AI explanation authoring. Use actor/input/result/next on steps when helpful, with source_index and relative offset/end_offset for block evidence. Expand this structure only where it improves understanding; preserve small packets and avoid repetitive boilerplate.
+
 Use the bundled local program instead of rewriting HTML or reading the whole repository. Commands below are relative to this skill folder. `python3` may replace `python`.
 
 Choose output language from the user's explicit instruction first, otherwise the natural-language prompt (Chinese → zh, English → en; ignore code and paths when deciding). Pass `--output-language zh|en` to function/business/render/packet. This is separate from `--language rust`. Standalone callers can use `--prompt` for automatic detection.

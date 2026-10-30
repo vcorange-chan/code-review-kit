@@ -4,6 +4,7 @@ from pathlib import Path
 from .storage import digest, resolve_source
 from .languages import adapter_for
 from .i18n import Translator, explanation_language
+from .explanation_steps import step_location
 
 
 def all_functions(index):
@@ -174,6 +175,19 @@ def make_packet(facts, budget):
     }
     language = facts.get("output_language", "zh")
     packet["output_language"] = language
+    packet["step_format"] = {
+        "required": ["title", "detail"],
+        "optional": [
+            "actor",
+            "input",
+            "result",
+            "next",
+            "reference",
+            "source_index",
+            "offset",
+            "end_offset",
+        ],
+    }
     packet["presentation"] = {
         "title": facts.get("title", ""),
         "flow": {
@@ -188,7 +202,12 @@ def make_packet(facts, budget):
             "Use evidence; preserve unknowns.",
             "Use symbol IDs for references.",
             "Explain success, errors and recovery. Candidate calls are not dispatch proof.",
+            "Explain code blocks in order: actor, input, condition and both outcomes, result, next destination. Explain cross-file calls and their return points; avoid syntax lessons.",
         ]
+    else:
+        packet["rules"].append(
+            "按代码块顺序解释执行者、输入、条件与两个结果、数据变化和下一步；跨文件调用写清交接与返回位置，略过语法。"
+        )
     repo = Path(facts["repository"])
 
     def size():
@@ -274,7 +293,8 @@ def validate_explanations(value, facts):
         )
     ):
         raise ValueError("Explanation flow labels must be text")
-    known = {f["id"] for f in facts["functions"]}
+    functions = {f["id"]: f for f in facts["functions"]}
+    known = set(functions)
     for symbol, card in value["cards"].items():
         if symbol not in known:
             raise ValueError("解释包含未选定的函数 ID: " + symbol)
@@ -301,6 +321,10 @@ def validate_explanations(value, facts):
                 or not isinstance(step.get("detail"), str)
             ):
                 raise ValueError("step 需要 title、detail 文本")
+            for key in ["actor", "input", "result", "next"]:
+                if key in step and not isinstance(step[key], str):
+                    raise ValueError("Step " + key + " must be text")
+            step_location(step, symbol, functions)
         for error in card.get("errors", []):
             if not isinstance(error, dict) or any(
                 not isinstance(error.get(k), str) for k in ["condition", "returns", "handling"]

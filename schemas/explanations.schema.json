@@ -26,7 +26,7 @@
           "normal_output": {"type": "string"},
           "steps": {
             "type": "array",
-            "items": {"type": "object", "required": ["title", "detail"], "properties": {"title": {"type": "string"}, "detail": {"type": "string"}, "reference": {"type": "string"}}}
+            "items": {"type": "object", "required": ["title", "detail"], "properties": {"title": {"type": "string"}, "detail": {"type": "string"}, "reference": {"type": "string"}, "actor": {"type": "string"}, "input": {"type": "string"}, "result": {"type": "string"}, "next": {"type": "string"}, "source_index": {"type": "integer", "minimum": 0}, "offset": {"type": "integer", "minimum": 0}, "end_offset": {"type": "integer", "minimum": 0}}}
           },
           "errors": {
             "type": "array",

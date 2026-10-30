@@ -9,6 +9,7 @@
 - 小方框：输入与正常输出；大方框：功能、实现、状态与源码链接。
 - 绿色直线主脉：成功顺序；红色侧分支：错误／中止；金色虚线：降级并回到指定节点。
 - 一个业务节点可关联多个函数及其他语言的源码上下文，不必把业务节点等同于函数。
+- 展开实现后，可按代码块顺序阅读执行者、输入、判断、结果与下一步；跨文件调用写清交接和返回，步骤链接定位到对应代码块。格式检查保证引用不越界，解释是否充分仍需 AI 阅读判断。
 - 当前自动提取 Rust。未知动态分派、未展开宏、图外依赖保留为限制，不冒充完整程序分析或运行证明。
 
 ## 安装
@@ -27,7 +28,7 @@ code-review doctor
 Pi：
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.4.0
+pi install git:github.com/vcorange-chan/code-review-kit@v0.5.0
 ```
 
 使用 `/skill:code-review-kit`。Cowork：从 GitHub Release 下载 `code-review-kit-skill.zip`，在 Customize → Skills 上传；需要启用代码执行。上传包是自包含的，首次提取时在实际执行环境安装依赖。它不假定可访问宿主机的盘符。详见 [安装说明](skills/code-review-kit/references/install.md)。

@@ -9,6 +9,7 @@ Turn source evidence and business explanations into collapsible, traceable HTML 
 - Small boxes show inputs and normal outputs; large boxes show function, implementation, state and source links.
 - A straight green spine shows success order; red side branches show errors/stops; gold dashed lines show fallbacks returning to a specified node.
 - A business node can reference multiple functions and source context in other languages. It does not have to correspond to one function.
+- Expand implementation to follow code blocks in order: actor, input, condition, result and next destination. Cross-file calls explain handoffs and return points; step links target the relevant code blocks. Structural checks prevent out-of-range references; whether the narrative is sufficient still requires AI source review.
 - Automatic extraction currently supports Rust. Unknown dynamic dispatch, unexpanded macros and dependencies outside the graph remain explicit limitations, not claims of complete program analysis or runtime proof.
 
 ## Installation
@@ -27,7 +28,7 @@ For a standalone installation, run `install.ps1` on Windows, or `python skills/c
 Pi:
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.4.0
+pi install git:github.com/vcorange-chan/code-review-kit@v0.5.0
 ```
 
 Use `/skill:code-review-kit`. For Cowork, download `code-review-kit-skill.zip` from GitHub Releases and upload it under Customize → Skills; code execution must be enabled. The uploaded package is self-contained and installs dependencies in its actual execution environment on first extraction. It does not assume access to the host machine's drive paths. See [installation notes](skills/code-review-kit/references/install.md).

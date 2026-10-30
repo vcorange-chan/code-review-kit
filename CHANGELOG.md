@@ -1,5 +1,12 @@
 # Changes
 
+## 0.5.0
+
+- Explain code blocks in execution order with actors, input, conditions, results and next destinations; clarify cross-file calls and return points in the shared AI/Skill contract.
+- Add optional structured step fields and evidence-bound block links using relative offsets and source selection. Reject references outside selected evidence.
+- Reveal sequential step bodies when implementation is expanded; retain legacy steps and existing card layout. Rename the vague limitations fold to Notes and limitations.
+- Add Chinese/English fixtures showing validation, return and caller-side error handling as separate blocks.
+
 ## 0.4.0
 
 - Add a full English README alongside the Chinese version.

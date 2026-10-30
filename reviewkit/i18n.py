@@ -3,6 +3,11 @@
 import re
 
 EN = {
+    "执行者": "Executed by",
+    "进入此步": "Input to this block",
+    "本步结果": "Block result",
+    "接下来": "Next",
+    "补充说明与限制": "Notes and limitations",
     "<h3>错误输出</h3>": "<h3>Error output</h3>",
     '<span class="muted">此侧无已解释分支</span>': '<span class="muted">No explained branch on this side</span>',
     "? 传播点 · ": "? propagation sites · ",

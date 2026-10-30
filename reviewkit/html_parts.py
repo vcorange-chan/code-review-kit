@@ -15,9 +15,9 @@ def p(value):
     return "<p>" + e(value) + "</p>"
 
 
-def fold(title, body):
+def fold(title, body, expanded=False):
     return (
-        "<details><summary>"
+        ("<details open data-linear-step><summary>" if expanded else "<details><summary>")
         + e(title)
         + '</summary><div class="inside">'
         + body

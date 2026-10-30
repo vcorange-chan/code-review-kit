@@ -13,6 +13,13 @@
           "file": "src/lib.rs",
           "symbol": "accept",
           "label": "接收文档实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 2,
+          "end_offset": 2,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -24,6 +31,13 @@
           "file": "src/lib.rs",
           "symbol": "open_source",
           "label": "读取来源实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 3,
+          "end_offset": 3,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -35,6 +49,13 @@
           "file": "src/lib.rs",
           "symbol": "decode",
           "label": "解码内容实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 4,
+          "end_offset": 4,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -46,6 +67,13 @@
           "file": "src/lib.rs",
           "symbol": "parse",
           "label": "解析文档实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 5,
+          "end_offset": 5,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -57,6 +85,13 @@
           "file": "src/lib.rs",
           "symbol": "split",
           "label": "拆分段落实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 6,
+          "end_offset": 6,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -68,6 +103,13 @@
           "file": "src/lib.rs",
           "symbol": "clean",
           "label": "可选清理实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 7,
+          "end_offset": 7,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -79,6 +121,13 @@
           "file": "src/lib.rs",
           "symbol": "review",
           "label": "可选复核实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 8,
+          "end_offset": 8,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -90,6 +139,13 @@
           "file": "src/lib.rs",
           "symbol": "annotate",
           "label": "可选标注实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 9,
+          "end_offset": 9,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -101,6 +157,13 @@
           "file": "src/lib.rs",
           "symbol": "translate",
           "label": "可选翻译实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 10,
+          "end_offset": 10,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -112,6 +175,13 @@
           "file": "src/lib.rs",
           "symbol": "preview",
           "label": "可选预览实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 11,
+          "end_offset": 11,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -123,6 +193,13 @@
           "file": "src/lib.rs",
           "symbol": "commit",
           "label": "提交结果实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 12,
+          "end_offset": 12,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -134,6 +211,13 @@
           "file": "src/lib.rs",
           "symbol": "collect",
           "label": "汇总批次实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 13,
+          "end_offset": 13,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -145,6 +229,13 @@
           "file": "src/lib.rs",
           "symbol": "finish",
           "label": "完成任务实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 14,
+          "end_offset": 14,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     },
@@ -156,6 +247,13 @@
           "file": "src/lib.rs",
           "symbol": "read_result",
           "label": "查看结果实现"
+        },
+        {
+          "file": "src/lib.rs",
+          "symbol": "run",
+          "offset": 15,
+          "end_offset": 15,
+          "label": "调用者接收结果与处理错误"
         }
       ]
     }

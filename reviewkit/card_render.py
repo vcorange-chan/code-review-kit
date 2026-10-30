@@ -1,6 +1,7 @@
 """Render one card from facts and plain-text explanations; no analysis rules here."""
 
 from .html_parts import e, fold, p, pre, table
+from .explanation_steps import step_location
 
 STATUS = {
     "current": "源码解释 · 证据匹配（未运行验证）",
@@ -46,9 +47,31 @@ class CardRenderer:
         body = ""
         if note.get("steps"):
             for number, step in enumerate(note["steps"], 1):
-                target = self.functions[step.get("reference", function["id"])]
+                target = step_location(step, function["id"], self.functions)
+                body_parts = []
+                for key, label in [("actor", "执行者"), ("input", "进入此步")]:
+                    if step.get(key):
+                        body_parts.append(
+                            "<p><strong>"
+                            + e(self.t(label))
+                            + "：</strong> "
+                            + e(step[key])
+                            + "</p>"
+                        )
+                body_parts.append(p(step["detail"]))
+                for key, label in [("result", "本步结果"), ("next", "接下来")]:
+                    if step.get(key):
+                        body_parts.append(
+                            "<p><strong>"
+                            + e(self.t(label))
+                            + "：</strong> "
+                            + e(step[key])
+                            + "</p>"
+                        )
                 body += fold(
-                    f"{number:02d} · " + step["title"], p(step["detail"]) + self.links.item(target)
+                    f"{number:02d} · " + step["title"],
+                    "".join(body_parts) + self.links.item(target),
+                    expanded=any(step.get(key) for key in ["actor", "input", "result", "next"]),
                 )
         else:
             body = p(self.t("以下为语法提取；业务阶段和实际执行顺序仍需解释。"))
@@ -232,7 +255,7 @@ class CardRenderer:
             + fold(self.t("代码位置与源码"), self.sources(function))
         )
         if note.get("notes"):
-            implementation += fold(self.t("实现边界"), "".join((p(x) for x in note["notes"])))
+            implementation += fold(self.t("补充说明与限制"), "".join((p(x) for x in note["notes"])))
         metadata = f"{number:02d} / " + note.get("scope", "") + " · " + self.t(STATUS[state])
         flow_id = e(function.get("flow_id", ""))
         return (

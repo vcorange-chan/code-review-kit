@@ -6,7 +6,7 @@
     "start_label": "Submit document",
     "end_label": "Document ready"
   },
-  "evidence_hash": "ed8b4be86b3f01059cccf702f0820c05be7fa58945a7132db1d446185e0d8fc5",
+  "evidence_hash": "d2e7492e21bfb56686aad5ab3614fc714b756001612ae0e36a0566308837438d",
   "cards": {
     "business::stage_1": {
       "title": "Accept document",
@@ -21,8 +21,37 @@
       ],
       "steps": [
         {
-          "title": "Accept document",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "accept",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_1, immediately return Err(\"accept failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "accept",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue on success; on error propagate the failure and skip later stages.",
+          "result": "New document value or propagated error",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -44,7 +73,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "b383fce763784293a74560e0befaea68cac39fcc312801d0cd7ff3d19487a5e5"
+      "evidence_hash": "d23faedae698c771c83c754dd2a9082f8d58b0930c784cc484e39eaac80333ac"
     },
     "business::stage_2": {
       "title": "Read source",
@@ -59,8 +88,37 @@
       ],
       "steps": [
         {
-          "title": "Read source",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "open_source",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_2, immediately return Err(\"open_source failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "open_source",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue on success; on error propagate the failure and skip later stages.",
+          "result": "New document value or propagated error",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -82,7 +140,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "dd40a95917a94c371661ba77ac505aa578210c1c4a00298e2fffe46caa50faf1"
+      "evidence_hash": "abdf6990d0d21e0002734e69316318b795c119dbbeda1927393d927ea3ed6526"
     },
     "business::stage_3": {
       "title": "Decode content",
@@ -97,8 +155,37 @@
       ],
       "steps": [
         {
-          "title": "Decode content",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "decode",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_3, immediately return Err(\"decode failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "decode",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue on success; on error propagate the failure and skip later stages.",
+          "result": "New document value or propagated error",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -120,7 +207,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "52d96e13b29e532a3e533937c8bb2f979c918a6ade65993da136301b09207041"
+      "evidence_hash": "b9d9e6b66db4b09bfaa6ba33d68d9ca9f5600946ffdfb6459dc6e6cb9295c420"
     },
     "business::stage_4": {
       "title": "Parse document",
@@ -135,8 +222,37 @@
       ],
       "steps": [
         {
-          "title": "Parse document",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "parse",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_4, immediately return Err(\"parse failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "parse",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue on success; on error propagate the failure and skip later stages.",
+          "result": "New document value or propagated error",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -158,7 +274,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "13e26d2a1d369d3c94c7982e653c6405015aeb851aa770a055b66543e7fa9fec"
+      "evidence_hash": "674aa17095ea2a72192669b49e5f4d985ab5a7f27e508fc6baaf2dda58eae739"
     },
     "business::stage_5": {
       "title": "Split paragraphs",
@@ -173,8 +289,37 @@
       ],
       "steps": [
         {
-          "title": "Split paragraphs",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "split",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_5, immediately return Err(\"split failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "split",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue on success; on error propagate the failure and skip later stages.",
+          "result": "New document value or propagated error",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -196,7 +341,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "60192378dfbbfb07dbe52d40ae3239c5338c861a6636b9910f01abc6be0aedc3"
+      "evidence_hash": "41ee59a152a49e3c5f087b0895c133636e8b87d5f9fdd5cdc8921b1de521e236"
     },
     "business::stage_6": {
       "title": "Optional cleanup",
@@ -211,8 +356,37 @@
       ],
       "steps": [
         {
-          "title": "Optional cleanup",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "clean",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_6, immediately return Err(\"clean failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "clean",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue with the successful value; on this optional step's error retain the previous value and continue.",
+          "result": "Retained document value",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -234,7 +408,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "5c9fee86396d0623da105a533640c14418d6abf895e8c3a6a3d0003e6b1ee8aa"
+      "evidence_hash": "dc51ce147869149c09580107b97a251f9dd5fa729a95b9da3e64d0eff0ee4a9a"
     },
     "business::stage_7": {
       "title": "Optional review",
@@ -249,8 +423,37 @@
       ],
       "steps": [
         {
-          "title": "Optional review",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "review",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_7, immediately return Err(\"review failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "review",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue with the successful value; on this optional step's error retain the previous value and continue.",
+          "result": "Retained document value",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -272,7 +475,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "cb48d8a3922135aa54a2fbb9e3304807ffe1a540615922a95c009e55d36a0928"
+      "evidence_hash": "288fce58053184354c608e5197e993e6e80aab4ac9bb1fcc1412e87ba454bc74"
     },
     "business::stage_8": {
       "title": "Optional annotation",
@@ -287,8 +490,37 @@
       ],
       "steps": [
         {
-          "title": "Optional annotation",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "annotate",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_8, immediately return Err(\"annotate failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "annotate",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue with the successful value; on this optional step's error retain the previous value and continue.",
+          "result": "Retained document value",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -310,7 +542,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "48380fca206d84322ab8904057aae23c321b8ae680155900b70d243ab7ba07d5"
+      "evidence_hash": "590d6937e93359f690f144033972878f4e5b58bf410211fb7c6fe1851ff12fb1"
     },
     "business::stage_9": {
       "title": "Optional translation",
@@ -325,8 +557,37 @@
       ],
       "steps": [
         {
-          "title": "Optional translation",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "translate",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_9, immediately return Err(\"translate failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "translate",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue with the successful value; on this optional step's error retain the previous value and continue.",
+          "result": "Retained document value",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -348,7 +609,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "2c365202c5223c5e99d5850295a9d04ea308988280570cf0b87dfa8e9575fc5f"
+      "evidence_hash": "859b88453b352c6e959f0b6b198976622b3e494582691bd6fe42676ccceb5eca"
     },
     "business::stage_10": {
       "title": "Optional preview",
@@ -363,8 +624,37 @@
       ],
       "steps": [
         {
-          "title": "Optional preview",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "preview",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_10, immediately return Err(\"preview failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "preview",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue with the successful value; on this optional step's error retain the previous value and continue.",
+          "result": "Retained document value",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -386,7 +676,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "7b8f66e76cabfe0448932c7bed7b8f34942a8ed253ad27acff1e6c00e2736c6c"
+      "evidence_hash": "c2d5217445cf4a67d2eafbcd364634c3478221f0e992ef370e082bc62d5e93b1"
     },
     "business::stage_11": {
       "title": "Commit result",
@@ -401,8 +691,37 @@
       ],
       "steps": [
         {
-          "title": "Commit result",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "commit",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_11, immediately return Err(\"commit failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "commit",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue on success; on error propagate the failure and skip later stages.",
+          "result": "New document value or propagated error",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -424,7 +743,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "2ca791230a54b49e5d07267deed05e38ec5ff151120525c1202caa4a29993874"
+      "evidence_hash": "173224f0f9675a12f85bec993b3bd44e2329df7d60b48631cb13592e7fe66df9"
     },
     "business::stage_12": {
       "title": "Collect batch",
@@ -439,8 +758,37 @@
       ],
       "steps": [
         {
-          "title": "Collect batch",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "collect",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_12, immediately return Err(\"collect failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "collect",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue on success; on error propagate the failure and skip later stages.",
+          "result": "New document value or propagated error",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -462,7 +810,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "0ecf56b5e9e6db371a1c334e00a1593cab38426a50a59c161fbf9db813f306b7"
+      "evidence_hash": "b06d723aed6466251a04f23f3bfd9efd99d6875c1df6a99793e2cc218cc8ce80"
     },
     "business::stage_13": {
       "title": "Complete task",
@@ -477,8 +825,37 @@
       ],
       "steps": [
         {
-          "title": "Complete task",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "finish",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_13, immediately return Err(\"finish failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "finish",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue on success; on error propagate the failure and skip later stages.",
+          "result": "New document value or propagated error",
+          "next": "Next stage in the calling workflow",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Continue to the next stage",
@@ -500,7 +877,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "c4034113f9a7fdfb930b2a913ce11272beeeca46a51e7d04d9186314f9b38e80"
+      "evidence_hash": "1c4dfea2c84562e104a4cda1fd8eab6272a13c47da2b43c00a3828cfb1a4e215"
     },
     "business::stage_14": {
       "title": "Read result",
@@ -515,8 +892,37 @@
       ],
       "steps": [
         {
-          "title": "Read result",
-          "detail": "Check this step's failure marker; return the document value when it passes."
+          "title": "Check whether input can enter this step",
+          "actor": "read_result",
+          "input": "Document string value passed by run",
+          "detail": "If input is empty or contains error_14, immediately return Err(\"read_result failed\") and skip the successful return below. Continue only when both conditions are false.",
+          "result": "An error has returned, or input passed the check",
+          "next": "On success continue to the next block; on failure return control to run",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "Build the successful return value",
+          "actor": "read_result",
+          "input": "A document string that passed the check",
+          "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+          "result": "Ok(document string)",
+          "next": "Return to the call site in run to handle the result",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "The caller handles the result and decides whether to continue",
+          "actor": "run",
+          "input": "Ok or Err from the current step",
+          "detail": "Continue on success; on error propagate the failure and skip later stages.",
+          "result": "New document value or propagated error",
+          "next": "run returns the final result",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "Final result is readable",
@@ -538,7 +944,7 @@
       "notes": [
         "Public synthetic example for checking the template and workflow, not a production implementation."
       ],
-      "evidence_hash": "a5ea117ce95f035055827478b391d1332c250c7691cd6719aec3bb0e511de69b"
+      "evidence_hash": "386afde178c4c3baebec7784c16fbbb1faf9f72bd61be1814c8b776a517a09fa"
     }
   }
 }

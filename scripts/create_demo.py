@@ -51,7 +51,16 @@ def create():
             {
                 "id": ident,
                 "label": name,
-                "sources": [{"file": "src/lib.rs", "symbol": name, "label": title + "实现"}],
+                "sources": [
+                    {"file": "src/lib.rs", "symbol": name, "label": title + "实现"},
+                    {
+                        "file": "src/lib.rs",
+                        "symbol": "run",
+                        "offset": i + 1,
+                        "end_offset": i + 1,
+                        "label": "调用者接收结果与处理错误",
+                    },
+                ],
             }
         )
         kind = "degrade" if 6 <= i <= 10 else "error"
@@ -77,7 +86,45 @@ def create():
             "inputs": ["传入字符串，不访问文件或网络。"],
             "output_title": "保留的文档值",
             "outputs": ["成功返回文档；可选步骤失败时由 run 保留旧值。"],
-            "steps": [{"title": title, "detail": "检查当前步骤的失败标记；通过时返回文档值。"}],
+            "steps": [
+                {
+                    "title": "判断输入能否进入本步骤",
+                    "actor": name,
+                    "input": "调用者 run 传入的文档字符串 value",
+                    "detail": f'若输入为空或包含 error_{i}，立即返回 Err("{name} failed")，不再执行本函数后面的成功返回；两个条件都不成立才继续。',
+                    "result": "错误已经返回，或输入通过检查",
+                    "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+                    "source_index": 0,
+                    "offset": 1,
+                    "end_offset": 1,
+                },
+                {
+                    "title": "通过检查后，生成成功返回值",
+                    "actor": name,
+                    "input": "通过检查的文档字符串",
+                    "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+                    "result": "Ok(文档字符串)",
+                    "next": "回到 run 的调用位置，处理结果",
+                    "source_index": 0,
+                    "offset": 2,
+                    "end_offset": 2,
+                },
+                {
+                    "title": "调用者处理结果，决定能否继续",
+                    "actor": "run",
+                    "input": "当前步骤返回的 Ok 或 Err",
+                    "detail": (
+                        "接到成功值就继续；若接到本可选步骤的错误，则保留原值继续。"
+                        if kind == "degrade"
+                        else "接到成功值就继续；若接到错误则向上返回并跳过后续阶段。"
+                    ),
+                    "result": "保留的文档值" if kind == "degrade" else "新的文档值或向上返回的错误",
+                    "next": "调用流程中的下一阶段" if i < 14 else "run 返回最终结果",
+                    "source_index": 1,
+                    "offset": 0,
+                    "end_offset": 0,
+                },
+            ],
             "state": "继续下一阶段" if i < 14 else "可读取最终结果",
             "branches": [branch],
             "notes": ["这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"],
@@ -154,9 +201,50 @@ def create():
             ],
             steps=[
                 {
-                    "title": title,
-                    "detail": "Check this step's failure marker; return the document value when it passes.",
-                }
+                    "title": "Check whether input can enter this step",
+                    "actor": name,
+                    "input": "Document string value passed by run",
+                    "detail": f'If input is empty or contains error_{i}, immediately return Err("{name} failed") and skip the successful return below. Continue only when both conditions are false.',
+                    "result": "An error has returned, or input passed the check",
+                    "next": "On success continue to the next block; on failure return control to run",
+                    "source_index": 0,
+                    "offset": 1,
+                    "end_offset": 1,
+                },
+                {
+                    "title": "Build the successful return value",
+                    "actor": name,
+                    "input": "A document string that passed the check",
+                    "detail": "Create an owned string and return Ok to run. This block is skipped when the previous block already returned Err.",
+                    "result": "Ok(document string)",
+                    "next": "Return to the call site in run to handle the result",
+                    "source_index": 0,
+                    "offset": 2,
+                    "end_offset": 2,
+                },
+                {
+                    "title": "The caller handles the result and decides whether to continue",
+                    "actor": "run",
+                    "input": "Ok or Err from the current step",
+                    "detail": (
+                        "Continue with the successful value; on this optional step's error retain the previous value and continue."
+                        if optional
+                        else "Continue on success; on error propagate the failure and skip later stages."
+                    ),
+                    "result": (
+                        "Retained document value"
+                        if optional
+                        else "New document value or propagated error"
+                    ),
+                    "next": (
+                        "Next stage in the calling workflow"
+                        if i < 14
+                        else "run returns the final result"
+                    ),
+                    "source_index": 1,
+                    "offset": 0,
+                    "end_offset": 0,
+                },
             ],
             state="Continue to the next stage" if i < 14 else "Final result is readable",
             notes=[

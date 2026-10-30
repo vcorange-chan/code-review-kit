@@ -8,7 +8,7 @@ const sourceBack=document.getElementById('source-back');if(sourceBack)sourceBack
 if(location.hash.startsWith('#source-'))showSnapshot(location.hash.slice(1));
 stages.forEach((stage,i)=>{const op=document.createElement('option');op.value=stage.id;op.textContent=`${i+1} · ${stage.querySelector('h2').textContent}`;jump.append(op)});
 jump.addEventListener('change',()=>document.getElementById(jump.value).scrollIntoView({behavior:'smooth',block:'start'}));
-document.getElementById('expand').addEventListener('click',()=>stages.forEach(s=>{const d=s.querySelector('.function>details');if(d)d.open=true}));
+document.getElementById('expand').addEventListener('click',()=>stages.forEach(s=>{const d=s.querySelector('.function>details');if(d){d.open=true;d.querySelectorAll('[data-linear-step]').forEach(step=>step.open=true)}}));
 document.getElementById('collapse').addEventListener('click',()=>document.querySelectorAll('details').forEach(d=>d.open=false));
 document.querySelectorAll('.function-link').forEach(b=>b.addEventListener('click',()=>{const d=[...b.closest('.function').children].find(x=>x.tagName==='DETAILS'&&x.querySelector('summary').textContent==='代码位置与源码');d.open=true;d.scrollIntoView({behavior:'smooth',block:'nearest'})}));
 document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);const t=document.getElementById('toast');t.hidden=false;setTimeout(()=>t.hidden=true,1500)}catch{prompt('代码位置',b.dataset.copy)}}));

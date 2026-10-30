@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "evidence_hash": "ed8b4be86b3f01059cccf702f0820c05be7fa58945a7132db1d446185e0d8fc5",
+  "evidence_hash": "d2e7492e21bfb56686aad5ab3614fc714b756001612ae0e36a0566308837438d",
   "cards": {
     "business::stage_1": {
       "title": "接收文档",
@@ -15,8 +15,37 @@
       ],
       "steps": [
         {
-          "title": "接收文档",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "accept",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_1，立即返回 Err(\"accept failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "accept",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到错误则向上返回并跳过后续阶段。",
+          "result": "新的文档值或向上返回的错误",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -38,7 +67,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "b383fce763784293a74560e0befaea68cac39fcc312801d0cd7ff3d19487a5e5"
+      "evidence_hash": "d23faedae698c771c83c754dd2a9082f8d58b0930c784cc484e39eaac80333ac"
     },
     "business::stage_2": {
       "title": "读取来源",
@@ -53,8 +82,37 @@
       ],
       "steps": [
         {
-          "title": "读取来源",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "open_source",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_2，立即返回 Err(\"open_source failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "open_source",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到错误则向上返回并跳过后续阶段。",
+          "result": "新的文档值或向上返回的错误",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -76,7 +134,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "dd40a95917a94c371661ba77ac505aa578210c1c4a00298e2fffe46caa50faf1"
+      "evidence_hash": "abdf6990d0d21e0002734e69316318b795c119dbbeda1927393d927ea3ed6526"
     },
     "business::stage_3": {
       "title": "解码内容",
@@ -91,8 +149,37 @@
       ],
       "steps": [
         {
-          "title": "解码内容",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "decode",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_3，立即返回 Err(\"decode failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "decode",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到错误则向上返回并跳过后续阶段。",
+          "result": "新的文档值或向上返回的错误",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -114,7 +201,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "52d96e13b29e532a3e533937c8bb2f979c918a6ade65993da136301b09207041"
+      "evidence_hash": "b9d9e6b66db4b09bfaa6ba33d68d9ca9f5600946ffdfb6459dc6e6cb9295c420"
     },
     "business::stage_4": {
       "title": "解析文档",
@@ -129,8 +216,37 @@
       ],
       "steps": [
         {
-          "title": "解析文档",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "parse",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_4，立即返回 Err(\"parse failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "parse",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到错误则向上返回并跳过后续阶段。",
+          "result": "新的文档值或向上返回的错误",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -152,7 +268,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "13e26d2a1d369d3c94c7982e653c6405015aeb851aa770a055b66543e7fa9fec"
+      "evidence_hash": "674aa17095ea2a72192669b49e5f4d985ab5a7f27e508fc6baaf2dda58eae739"
     },
     "business::stage_5": {
       "title": "拆分段落",
@@ -167,8 +283,37 @@
       ],
       "steps": [
         {
-          "title": "拆分段落",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "split",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_5，立即返回 Err(\"split failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "split",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到错误则向上返回并跳过后续阶段。",
+          "result": "新的文档值或向上返回的错误",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -190,7 +335,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "60192378dfbbfb07dbe52d40ae3239c5338c861a6636b9910f01abc6be0aedc3"
+      "evidence_hash": "41ee59a152a49e3c5f087b0895c133636e8b87d5f9fdd5cdc8921b1de521e236"
     },
     "business::stage_6": {
       "title": "可选清理",
@@ -205,8 +350,37 @@
       ],
       "steps": [
         {
-          "title": "可选清理",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "clean",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_6，立即返回 Err(\"clean failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "clean",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到本可选步骤的错误，则保留原值继续。",
+          "result": "保留的文档值",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -228,7 +402,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "5c9fee86396d0623da105a533640c14418d6abf895e8c3a6a3d0003e6b1ee8aa"
+      "evidence_hash": "dc51ce147869149c09580107b97a251f9dd5fa729a95b9da3e64d0eff0ee4a9a"
     },
     "business::stage_7": {
       "title": "可选复核",
@@ -243,8 +417,37 @@
       ],
       "steps": [
         {
-          "title": "可选复核",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "review",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_7，立即返回 Err(\"review failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "review",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到本可选步骤的错误，则保留原值继续。",
+          "result": "保留的文档值",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -266,7 +469,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "cb48d8a3922135aa54a2fbb9e3304807ffe1a540615922a95c009e55d36a0928"
+      "evidence_hash": "288fce58053184354c608e5197e993e6e80aab4ac9bb1fcc1412e87ba454bc74"
     },
     "business::stage_8": {
       "title": "可选标注",
@@ -281,8 +484,37 @@
       ],
       "steps": [
         {
-          "title": "可选标注",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "annotate",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_8，立即返回 Err(\"annotate failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "annotate",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到本可选步骤的错误，则保留原值继续。",
+          "result": "保留的文档值",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -304,7 +536,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "48380fca206d84322ab8904057aae23c321b8ae680155900b70d243ab7ba07d5"
+      "evidence_hash": "590d6937e93359f690f144033972878f4e5b58bf410211fb7c6fe1851ff12fb1"
     },
     "business::stage_9": {
       "title": "可选翻译",
@@ -319,8 +551,37 @@
       ],
       "steps": [
         {
-          "title": "可选翻译",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "translate",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_9，立即返回 Err(\"translate failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "translate",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到本可选步骤的错误，则保留原值继续。",
+          "result": "保留的文档值",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -342,7 +603,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "2c365202c5223c5e99d5850295a9d04ea308988280570cf0b87dfa8e9575fc5f"
+      "evidence_hash": "859b88453b352c6e959f0b6b198976622b3e494582691bd6fe42676ccceb5eca"
     },
     "business::stage_10": {
       "title": "可选预览",
@@ -357,8 +618,37 @@
       ],
       "steps": [
         {
-          "title": "可选预览",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "preview",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_10，立即返回 Err(\"preview failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "preview",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到本可选步骤的错误，则保留原值继续。",
+          "result": "保留的文档值",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -380,7 +670,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "7b8f66e76cabfe0448932c7bed7b8f34942a8ed253ad27acff1e6c00e2736c6c"
+      "evidence_hash": "c2d5217445cf4a67d2eafbcd364634c3478221f0e992ef370e082bc62d5e93b1"
     },
     "business::stage_11": {
       "title": "提交结果",
@@ -395,8 +685,37 @@
       ],
       "steps": [
         {
-          "title": "提交结果",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "commit",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_11，立即返回 Err(\"commit failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "commit",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到错误则向上返回并跳过后续阶段。",
+          "result": "新的文档值或向上返回的错误",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -418,7 +737,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "2ca791230a54b49e5d07267deed05e38ec5ff151120525c1202caa4a29993874"
+      "evidence_hash": "173224f0f9675a12f85bec993b3bd44e2329df7d60b48631cb13592e7fe66df9"
     },
     "business::stage_12": {
       "title": "汇总批次",
@@ -433,8 +752,37 @@
       ],
       "steps": [
         {
-          "title": "汇总批次",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "collect",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_12，立即返回 Err(\"collect failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "collect",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到错误则向上返回并跳过后续阶段。",
+          "result": "新的文档值或向上返回的错误",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -456,7 +804,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "0ecf56b5e9e6db371a1c334e00a1593cab38426a50a59c161fbf9db813f306b7"
+      "evidence_hash": "b06d723aed6466251a04f23f3bfd9efd99d6875c1df6a99793e2cc218cc8ce80"
     },
     "business::stage_13": {
       "title": "完成任务",
@@ -471,8 +819,37 @@
       ],
       "steps": [
         {
-          "title": "完成任务",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "finish",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_13，立即返回 Err(\"finish failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "finish",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到错误则向上返回并跳过后续阶段。",
+          "result": "新的文档值或向上返回的错误",
+          "next": "调用流程中的下一阶段",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "继续下一阶段",
@@ -494,7 +871,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "c4034113f9a7fdfb930b2a913ce11272beeeca46a51e7d04d9186314f9b38e80"
+      "evidence_hash": "1c4dfea2c84562e104a4cda1fd8eab6272a13c47da2b43c00a3828cfb1a4e215"
     },
     "business::stage_14": {
       "title": "查看结果",
@@ -509,8 +886,37 @@
       ],
       "steps": [
         {
-          "title": "查看结果",
-          "detail": "检查当前步骤的失败标记；通过时返回文档值。"
+          "title": "判断输入能否进入本步骤",
+          "actor": "read_result",
+          "input": "调用者 run 传入的文档字符串 value",
+          "detail": "若输入为空或包含 error_14，立即返回 Err(\"read_result failed\")，不再执行本函数后面的成功返回；两个条件都不成立才继续。",
+          "result": "错误已经返回，或输入通过检查",
+          "next": "仅通过检查时进入下一块；失败时交回 run 处理",
+          "source_index": 0,
+          "offset": 1,
+          "end_offset": 1
+        },
+        {
+          "title": "通过检查后，生成成功返回值",
+          "actor": "read_result",
+          "input": "通过检查的文档字符串",
+          "detail": "复制为拥有自身内容的字符串，并以 Ok 返回给 run。若前一块已返回 Err，本块不会执行。",
+          "result": "Ok(文档字符串)",
+          "next": "回到 run 的调用位置，处理结果",
+          "source_index": 0,
+          "offset": 2,
+          "end_offset": 2
+        },
+        {
+          "title": "调用者处理结果，决定能否继续",
+          "actor": "run",
+          "input": "当前步骤返回的 Ok 或 Err",
+          "detail": "接到成功值就继续；若接到错误则向上返回并跳过后续阶段。",
+          "result": "新的文档值或向上返回的错误",
+          "next": "run 返回最终结果",
+          "source_index": 1,
+          "offset": 0,
+          "end_offset": 0
         }
       ],
       "state": "可读取最终结果",
@@ -532,7 +938,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "a5ea117ce95f035055827478b391d1332c250c7691cd6719aec3bb0e511de69b"
+      "evidence_hash": "386afde178c4c3baebec7784c16fbbb1faf9f72bd61be1814c8b776a517a09fa"
     }
   }
 }

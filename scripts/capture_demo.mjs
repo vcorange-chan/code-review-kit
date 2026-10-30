@@ -23,6 +23,10 @@ try {
   if (checks.cards !== 14 || checks.success !== 43 || checks.resume !== 5 || !checks.straight || !checks.current) {
     throw new Error(JSON.stringify(checks));
   }
+  await page.locator('#collapse').click();
+  await page.locator('#expand').click();
+  const linearSteps = await page.locator('#card-1 [data-linear-step]').evaluateAll(elements=>({count:elements.length,open:elements.every(e=>e.open),text:elements.map(e=>e.textContent).join(' ')}));
+  if (linearSteps.count !== 3 || !linearSteps.open || !/执行者|Executed by/.test(linearSteps.text)) throw new Error('Sequential blocks are not readable after expand');
   await page.locator('#card-1 .function-link').click();
   await page.locator('#card-1 .source a[data-snapshot]').first().click();
   await page.waitForSelector('.source-line.focused');
@@ -34,7 +38,7 @@ try {
   await page.locator('#card-5').evaluate(element => element.scrollIntoView({ behavior: 'instant', block: 'start' }));
   await mkdir(dirname(resolve(output)), { recursive: true });
   await page.screenshot({ path: output, animations: 'disabled' });
-  console.log(JSON.stringify({ ...checks, sourceNavigation:true, returnToFlow:true, language:await page.locator('html').getAttribute('lang'), screenshot: output }));
+  console.log(JSON.stringify({ ...checks, linearBlocks:linearSteps.count, sourceNavigation:true, returnToFlow:true, language:await page.locator('html').getAttribute('lang'), screenshot: output }));
 } finally {
   await browser.close();
 }
