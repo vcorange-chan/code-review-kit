@@ -6,6 +6,9 @@
   "properties": {
     "schema_version": {"const": 1},
     "evidence_hash": {"type": "string"},
+    "output_language": {"enum": ["zh", "en"]},
+    "title": {"type": "string"},
+    "flow": {"type": "object", "properties": {"start_label": {"type": "string"}, "end_label": {"type": "string"}}},
     "cards": {
       "type": "object",
       "additionalProperties": {

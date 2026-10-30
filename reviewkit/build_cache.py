@@ -20,6 +20,7 @@ def build_key(args, index, manifest, notes, home):
             "title": getattr(args, "title", None),
             "link_mode": getattr(args, "link_mode", "embedded"),
             "link_template": getattr(args, "link_template", None),
+            "output_language": getattr(args, "resolved_output_language", "zh"),
             "depth": args.depth,
             "max_nodes": args.max_nodes,
             "packet_bytes": args.packet_bytes,

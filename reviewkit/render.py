@@ -3,11 +3,13 @@
 from collections import defaultdict
 from pathlib import Path
 import re
+import copy
 from .storage import digest, resolve_source
 from .engine import validate_explanations
 from .card_render import CardRenderer, STATUS
 from .html_parts import e, fold, p, pre, table
 from .source_links import SourceLinks
+from .i18n import Translator, resolve_language, explanation_language, has_chinese, has_explanations
 
 TEMPLATES = Path(__file__).resolve().parent / "templates"
 
@@ -23,6 +25,7 @@ def changed_sources(facts):
 
 
 def call_relations(facts, links):
+    t = links.t
     functions = {f["id"]: f for f in facts["functions"]}
     candidates = []
     unresolved = defaultdict(list)
@@ -33,7 +36,7 @@ def call_relations(facts, links):
                     e(edge["from"]),
                     e(edge["name"]),
                     e(edge.get("basis", "syntax_candidate")),
-                    "<br>".join(e(x) for x in edge["candidates"]),
+                    "<br>".join((e(x) for x in edge["candidates"])),
                 )
             )
         else:
@@ -53,53 +56,59 @@ def call_relations(facts, links):
                 e(name),
                 e(receiver or "—"),
                 e(reason),
-                " ".join(links.reference(file, line) for line in sorted(set(lines))),
+                " ".join((links.reference(file, line) for line in sorted(set(lines)))),
             )
         )
     callers = table(
-        ["调用者候选", "类别", "位置"],
+        [t("调用者候选"), t("类别"), t("位置")],
         [
-            (e(c["caller"]), "测试" if c["test"] else "生产候选", links.item(c))
+            (e(c["caller"]), t("测试") if c["test"] else t("生产候选"), links.item(c))
             for c in facts["callers"]
         ],
     )
     macros = table(
-        ["宏内提及（未展开）", "位置"],
+        [t("宏内提及（未展开）"), t("位置")],
         [(e(m["caller"]), links.item(m)) for m in facts["macro_mentions"]],
     )
     return (
         fold(
-            "调用候选 · " + str(len(candidates)),
-            table(["来源", "调用", "依据（非类型检查）", "候选目标"], candidates),
+            t("调用候选 · ") + str(len(candidates)),
+            table([t("来源"), t("调用"), t("依据（非类型检查）"), t("候选目标")], candidates),
         )
         + fold(
-            "未解析调用／接收者 · " + str(sum(len(v) for v in unresolved.values())),
+            t("未解析调用／接收者 · ") + str(sum((len(v) for v in unresolved.values()))),
             p(
-                "未解析调用仍保留在图中。可能是接收者类型未知、外部函数、泛型或变量被遮蔽；不会静默丢弃。"
+                t(
+                    "未解析调用仍保留在图中。可能是接收者类型未知、外部函数、泛型或变量被遮蔽；不会静默丢弃。"
+                )
             )
-            + table(["来源", "调用", "接收者", "未解析原因", "位置"], rows),
+            + table([t("来源"), t("调用"), t("接收者"), t("未解析原因"), t("位置")], rows),
         )
-        + fold("调用者与宏内提及", callers + macros)
+        + fold(t("调用者与宏内提及"), callers + macros)
     )
 
 
 def inventory(facts, rows, links):
+    t = links.t
     limits = facts["limits"]
     boundary = (
-        p("成功顺序来自业务清单。调用边是语法候选；未解析调用不等于没有调用。默认无运行验证。")
+        p(t("成功顺序来自业务清单。调用边是语法候选；未解析调用不等于没有调用。默认无运行验证。"))
         + pre(facts["index_stats"])
         + p(
-            f'追踪深度：{limits["depth"]}；节点上限：{limits["max_nodes"]}；超限未纳入：{len(limits["truncated_nodes"])}'
+            f"{t('追踪深度：')}{limits['depth']}{t('；节点上限：')}{limits['max_nodes']}{t('；超限未纳入：')}{len(limits['truncated_nodes'])}"
         )
-        + p("解析错误文件：" + str(len(facts.get("parse_errors", []))))
-        + p("上下文摘要保留可见导入、相关属性与宏。仍会对可见导入组等情况做保守判断。")
+        + p(t("解析错误文件：") + str(len(facts.get("parse_errors", []))))
+        + p(t("上下文摘要保留可见导入、相关属性与宏。仍会对可见导入组等情况做保守判断。"))
     )
-    types = "".join(fold(t["name"], pre(t["text"]) + links.item(t)) for t in facts["types"])
+    types = "".join((fold(t["name"], pre(t["text"]) + links.item(t)) for t in facts["types"]))
     return (
-        fold("按图索骥 · 查看顺序", table(["顺序", "函数／业务节点", "源码位置", "解释状态"], rows))
-        + fold("调用关系与未解析项", call_relations(facts, links))
-        + fold("相关类型与错误枚举", types)
-        + fold("生成信息与边界", boundary)
+        fold(
+            t("按图索骥 · 查看顺序"),
+            table([t("顺序"), t("函数／业务节点"), t("源码位置"), t("解释状态")], rows),
+        )
+        + fold(t("调用关系与未解析项"), call_relations(facts, links))
+        + fold(t("相关类型与错误枚举"), types)
+        + fold(t("生成信息与边界"), boundary)
     )
 
 
@@ -112,11 +121,53 @@ def terminal(flow, key, element_id):
 
 
 def render(
-    facts, explanations, target, title="代码流程 Review", link_mode="embedded", link_template=None
+    facts,
+    explanations,
+    target,
+    title="代码流程 Review",
+    link_mode="embedded",
+    link_template=None,
+    output_language=None,
 ):
+    language = resolve_language(
+        output_language or "auto",
+        fallback=explanations.get("output_language", facts.get("output_language", "zh")),
+    )
+    t = Translator(language)
+    validate_explanations(explanations, facts)
+    needs_translation = explanation_language(explanations) != language and has_explanations(
+        explanations
+    )
+    if needs_translation:
+        explanations = {"schema_version": 1, "output_language": language, "cards": {}}
+    # Presentation copies never modify evidence, source text or saved explanations.
+    facts = copy.deepcopy(facts)
+    flow = facts.get("flow", {})
+    for key, fallback in [("start_label", "Start"), ("end_label", "Complete")]:
+        flow[key] = explanations.get("flow", {}).get(key, flow.get(key, ""))
+        if language == "en" and has_chinese(flow[key]):
+            flow[key] = fallback
+    for edge in flow.get("edges", []):
+        if language == "en" and has_chinese(edge.get("label", "")):
+            edge["label"] = "Return to main flow"
+    for function in facts["functions"]:
+        if (
+            function.get("view") == "business"
+            and language == "en"
+            and has_chinese(function["name"])
+        ):
+            function["name"] = function.get("function_id") or function.get(
+                "flow_id", function["id"]
+            )
+        for source in function.get("sources", []):
+            if language == "en" and has_chinese(source.get("label", "")):
+                source["label"] = source["file"]
+    title = explanations.get("title", title)
+    if language == "en" and has_chinese(title):
+        title = "Code Flow Review"
     freshness = validate_explanations(explanations, facts)
     changed = changed_sources(facts)
-    links = SourceLinks(facts, target, link_mode, link_template)
+    links = SourceLinks(facts, target, link_mode, link_template, language)
     renderer = CardRenderer(facts, links)
     cards = []
     rows = []
@@ -125,19 +176,28 @@ def render(
         note = explanations.get("cards", {}).get(ident, {})
         files = facts.get("card_files", {}).get(ident, facts["source_files"])
         state = (
-            "current" if freshness.get(ident) and not set(changed).intersection(files) else "stale"
+            "current"
+            if freshness.get(ident) and (not set(changed).intersection(files))
+            else "stale"
         )
         if not note.get("steps"):
             state = "automatic"
         cards.append(renderer.card(number, function, note, state))
-        rows.append((number, e(function["name"]), links.item(function), e(STATUS[state])))
+        rows.append(
+            (
+                number,
+                e(note.get("title") or function["name"]),
+                links.item(function),
+                e(t(STATUS[state])),
+            )
+        )
     flow = facts.get("flow", {})
     values = {
         "TITLE": e(title),
         "CSS": (TEMPLATES / "review.css").read_text(encoding="utf-8"),
         "JS": (TEMPLATES / "review.js").read_text(encoding="utf-8"),
         "WARNING": (
-            p("当前源码与事实快照不同，请重新提取：" + ", ".join(changed)) if changed else ""
+            p(t("当前源码与事实快照不同，请重新提取：") + ", ".join(changed)) if changed else ""
         ),
         "CARDS": "".join(cards),
         "INVENTORY": inventory(facts, rows, links),
@@ -147,19 +207,28 @@ def render(
         "START": terminal(flow, "start_label", "flow-start"),
         "END": terminal(flow, "end_label", "flow-end"),
     }
-    template = (TEMPLATES / "review.html").read_text(encoding="utf-8")
-    # A single substitution pass never interprets markers inside source or explanations.
-    result = re.sub(r"\{\{([A-Z]+)\}\}", lambda match: values[match.group(1)], template)
+    values["LANG"] = "zh-CN" if language == "zh" else "en"
+    values["JS"] = t.template(values["JS"])
+    if needs_translation:
+        values["WARNING"] += p(
+            "Explanations need English translation. Fill explanations.en.json using the seed; the original explanations are preserved."
+            if language == "en"
+            else "解释需要翻译为中文。请根据骨架填写 explanations.zh.json；原解释保留。"
+        )
+    template = t.template((TEMPLATES / "review.html").read_text(encoding="utf-8"))
+    result = re.sub("\\{\\{([A-Z]+)\\}\\}", lambda match: values[match.group(1)], template)
     target = Path(target)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(result, encoding="utf-8")
     return {
         "cards": len(cards),
         "explained": sum(
-            bool(explanations.get("cards", {}).get(i, {}).get("steps")) for i in facts["root_ids"]
+            (bool(explanations.get("cards", {}).get(i, {}).get("steps")) for i in facts["root_ids"])
         ),
         "stale_cards": [i for i, current in freshness.items() if not current],
         "source_changed": changed,
         "link_mode": links.mode,
-        "unresolved_calls": sum(not x["candidates"] for x in facts["edges"]),
+        "unresolved_calls": sum((not x["candidates"] for x in facts["edges"])),
+        "output_language": language,
+        "needs_translation": needs_translation,
     }

@@ -1,5 +1,7 @@
 # Code Review Kit
 
+[English](README.en.md) · 简体中文
+
 把源码证据和业务解释生成可折叠、可追溯的 HTML 地图。默认不调用模型 API；以缓存、精简证据包和固定模板减少重复工作。
 
 ![合成文档流程：绿色成功主脉、红色错误分支、金色降级返回](docs/review-example.png)
@@ -25,7 +27,7 @@ code-review doctor
 Pi：
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.3.0
+pi install git:github.com/vcorange-chan/code-review-kit@v0.4.0
 ```
 
 使用 `/skill:code-review-kit`。Cowork：从 GitHub Release 下载 `code-review-kit-skill.zip`，在 Customize → Skills 上传；需要启用代码执行。上传包是自包含的，首次提取时在实际执行环境安装依赖。它不假定可访问宿主机的盘符。详见 [安装说明](skills/code-review-kit/references/install.md)。
@@ -64,7 +66,8 @@ code-review pin-sources --manifest old-flow.json --repo /path/to/repository --ou
 | facts.json | 自动事实、源码快照、调用候选与证据摘要；通常留在本地 |
 | evidence-packet.json | 供 AI 阅读的小包，默认不超过 24000 UTF-8 字节（不是 token 数） |
 | explanations.seed.json | 当前证据对应的解释骨架 |
-| explanations.json | 独立的中文业务解释；重建时保留 |
+| explanations.json | 独立的业务解释；保留旧版默认文件 |
+| explanations.zh.json / explanations.en.json | 分语言保存解释，避免互相覆盖 |
 | build-stats.json | 耗时、缓存复用、待复核卡片等简短结果 |
 
 ```sh
@@ -73,6 +76,26 @@ code-review packet --facts review/facts.json --symbol some_function --out packet
 ```
 
 已绑定的解释可继续复用。相关函数、来源或图结构改变时标为待复核；符号锚点不因函数前插入代码而改变身份。无关类型的 derive 不再使整份文件的解释过期；相关类型、函数属性和可见导入仍保守跟踪。不能为了消除提示直接给旧解释换新摘要。CLI 和所有 AI 入口调用同一核心与模板。
+
+## 中文与英文输出
+
+语言选择顺序：用户明确指定 > 用户提示词语言 > 已有解释/事实的语言；没有这些信息时沿用中文。Skill 理解用户的语言指示并传给共用 CLI；纯 CLI 可通过 `--prompt` 检测常见语言指示与中英文文字。混合语言或复杂指示请显式指定。`--prompt` 只用于选择输出语言，不替代函数/业务参数，也不保存原提示词。
+
+```sh
+code-review function --repo /path/to/repository --symbol run --out review --output-language en
+code-review function --repo /path/to/repository --symbol run --out review --output-language zh
+code-review function --repo /path/to/repository --symbol run --out review --prompt "Review run"
+code-review function --repo /path/to/repository --symbol run --out review --prompt "审阅 run"
+```
+
+`--output-language` 支持 `auto`（默认）、`zh`/`中文`、`en`/`English`，与源码分析选项 `--language rust` 无关。`function`、`business`、`render`、`packet` 共用这套规则；切换语言会重新生成 HTML，继续复用源码索引与证据。
+
+界面、状态、按钮及证据包指引使用目标语言；源码、符号和路径保留原文。业务解释由调用工具的 AI 按目标语言填写，工具不会联网翻译。解释 JSON 用 `output_language` 标记语言（旧文件视为中文），可用顶层 `title` 和 `flow.start_label/end_label` 提供对应语言的报告标题与起止标签。已有解释语言不符时，页面明确提示待翻译，保持原文文件，生成目标语言的 seed；AI 只补充缺少的语言版本，保留证据摘要，再运行 `render`。不会把中文解释直接放进英文界面冒充英文结果。
+
+```sh
+code-review business --manifest examples/document-pipeline/business.json --explanations examples/document-pipeline/explanations.en.json --output-language en --out review-en --depth 0 --max-nodes 64
+code-review render --facts review-en/facts.json --explanations review-en/explanations.en.json --html review-en/index.html --output-language en
+```
 
 ## 可分享的源码链接
 

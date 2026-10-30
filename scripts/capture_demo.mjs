@@ -23,10 +23,18 @@ try {
   if (checks.cards !== 14 || checks.success !== 43 || checks.resume !== 5 || !checks.straight || !checks.current) {
     throw new Error(JSON.stringify(checks));
   }
+  await page.locator('#card-1 .function-link').click();
+  await page.locator('#card-1 .source a[data-snapshot]').first().click();
+  await page.waitForSelector('.source-line.focused');
+  if (!(await page.locator('.source-line.focused').textContent()).includes('pub fn accept')) throw new Error('Source navigation failed');
+  await page.locator('#source-back').click();
+  await page.locator('#collapse').click();
+  const sourceHidden = await page.locator('#source-view').evaluate(element=>element.hidden);
+  if (!sourceHidden) throw new Error('Return to flow failed');
   await page.locator('#card-5').evaluate(element => element.scrollIntoView({ behavior: 'instant', block: 'start' }));
   await mkdir(dirname(resolve(output)), { recursive: true });
   await page.screenshot({ path: output, animations: 'disabled' });
-  console.log(JSON.stringify({ ...checks, screenshot: output }));
+  console.log(JSON.stringify({ ...checks, sourceNavigation:true, returnToFlow:true, language:await page.locator('html').getAttribute('lang'), screenshot: output }));
 } finally {
   await browser.close();
 }

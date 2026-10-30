@@ -3,6 +3,7 @@
 from pathlib import Path
 import sys
 import json
+import copy
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / ".deps")]
@@ -122,7 +123,74 @@ def create():
         folder / "explanations.json",
         {"schema_version": 1, "evidence_hash": facts["evidence_hash"], "cards": cards},
     )
-    print("Created portable public example: examples/document-pipeline")
+    english_titles = [
+        "Accept document",
+        "Read source",
+        "Decode content",
+        "Parse document",
+        "Split paragraphs",
+        "Optional cleanup",
+        "Optional review",
+        "Optional annotation",
+        "Optional translation",
+        "Optional preview",
+        "Commit result",
+        "Collect batch",
+        "Complete task",
+        "Read result",
+    ]
+    english_cards = copy.deepcopy(cards)
+    for i, ((name, _), title) in enumerate(zip(stages, english_titles), 1):
+        card = english_cards[f"business::stage_{i}"]
+        optional = 6 <= i <= 10
+        card.update(
+            title=title,
+            scope="Synthetic document workflow",
+            input_title="Previous document value",
+            inputs=["A string is passed; no file or network access."],
+            output_title="Retained document value",
+            outputs=[
+                "Return the document on success; run retains the previous value if an optional step fails."
+            ],
+            steps=[
+                {
+                    "title": title,
+                    "detail": "Check this step's failure marker; return the document value when it passes.",
+                }
+            ],
+            state="Continue to the next stage" if i < 14 else "Final result is readable",
+            notes=[
+                "Public synthetic example for checking the template and workflow, not a production implementation."
+            ],
+        )
+        branch = card["branches"][0]
+        branch.update(
+            title="Optional processing unavailable" if optional else "Step failed",
+            state="Keep the previous result" if optional else "Stop the pipeline",
+        )
+        branch["items"] = [
+            {
+                "condition": f"Input contains error_{i} or is empty",
+                "returns": f'Err("{name} failed")',
+                "handling": (
+                    "Retain the previous value and continue"
+                    if optional
+                    else "Return the error; skip subsequent steps"
+                ),
+            }
+        ]
+    write_json(
+        folder / "explanations.en.json",
+        {
+            "schema_version": 1,
+            "output_language": "en",
+            "title": "Document import · 14-stage example",
+            "flow": {"start_label": "Submit document", "end_label": "Document ready"},
+            "evidence_hash": facts["evidence_hash"],
+            "cards": english_cards,
+        },
+    )
+    print("Created portable bilingual public example: examples/document-pipeline")
 
 
 if __name__ == "__main__":

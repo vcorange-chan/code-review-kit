@@ -8,23 +8,28 @@ import string
 from urllib.parse import quote, urlsplit
 from .html_parts import e, fold, p
 from .storage import resolve_source
+from .i18n import Translator
 
 
 class SourceLinks:
-    def __init__(self, facts, output, mode="embedded", template=None):
+
+    def __init__(self, facts, output, mode="embedded", template=None, output_language="zh"):
+        self.t = Translator(output_language)
         self.repo = Path(facts["repository"])
         self.output = Path(output)
         self.mode = "template" if template is not None else mode
         self.template = template
         self.lines = defaultdict(dict)
         if self.mode not in {"embedded", "relative", "local", "template"}:
-            raise ValueError("link-mode 仅支持 embedded/relative/local")
+            raise ValueError(self.t("link-mode 仅支持 embedded/relative/local"))
         if template is not None:
             fields = {"path", "absolute_path", "line", "end_line"}
             for _, field, spec, conversion in string.Formatter().parse(template):
                 if field is not None and (field not in fields or spec or conversion):
                     raise ValueError(
-                        "link-template 仅支持 path/absolute_path/line/end_line，无格式或属性表达式"
+                        self.t(
+                            "link-template 仅支持 path/absolute_path/line/end_line，无格式或属性表达式"
+                        )
                     )
             if urlsplit(template).scheme.lower() not in {
                 "",
@@ -34,7 +39,7 @@ class SourceLinks:
                 "vscode",
                 "vscode-insiders",
             }:
-                raise ValueError("link-template 使用了不支持的 URL 协议")
+                raise ValueError(self.t("link-template 使用了不支持的 URL 协议"))
         for item in facts["functions"]:
             self.add(item["file"], item["line"], item.get("source", ""))
             for source in item.get("sources", []):
@@ -60,7 +65,9 @@ class SourceLinks:
             target = self.target(file, line)
             href = "#" + target
             marker = ' data-snapshot="' + target + '"'
-            self.lines[file].setdefault(line, "（此位置未纳入源码快照；可重新提取相关函数。）")
+            self.lines[file].setdefault(
+                line, self.t("（此位置未纳入源码快照；可重新提取相关函数。）")
+            )
         elif self.mode == "local":
             href = resolve_source(self.repo, file).as_uri()
             copy_text = str(resolve_source(self.repo, file)) + ":" + str(line)
@@ -71,7 +78,9 @@ class SourceLinks:
                 )
             except ValueError as error:
                 raise ValueError(
-                    "源码和报告不在同一盘符，无法生成相对链接；请使用 embedded 或 link-template"
+                    self.t(
+                        "源码和报告不在同一盘符，无法生成相对链接；请使用 embedded 或 link-template"
+                    )
                 ) from error
             href = quote(Path(relative).as_posix(), safe="/")
         else:
@@ -85,8 +94,15 @@ class SourceLinks:
             }
             href = self.template.format_map(values)
         return (
-            '<a href="' + e(href) + '"' + marker + ">" + e(label) + "</a> "
-            '<button class="copy" data-copy="' + e(copy_text) + '">复制位置</button>'
+            '<a href="'
+            + e(href)
+            + '"'
+            + marker
+            + ">"
+            + e(label)
+            + '</a> <button class="copy" data-copy="'
+            + e(copy_text)
+            + self.t('">复制位置</button>')
         )
 
     def item(self, item):
@@ -103,8 +119,9 @@ class SourceLinks:
                 if previous and number > previous + 1:
                     rows.append('<span class="source-gap">…</span>')
                 rows.append(
-                    '<span class="source-line" id="' + self.target(file, number) + '">'
-                    '<span class="line-number">'
+                    '<span class="source-line" id="'
+                    + self.target(file, number)
+                    + '"><span class="line-number">'
                     + str(number)
                     + "</span> <code>"
                     + e(text)
@@ -113,9 +130,10 @@ class SourceLinks:
                 previous = number
             files.append(fold(file, '<pre class="source-lines">' + "".join(rows) + "</pre>"))
         return (
-            '<section id="source-view" class="inventory" hidden><h2>源码快照</h2>'
-            '<button id="source-back">返回流程</button>'
-            + p("只显示所选证据中的源码；行号为生成时快照。")
+            self.t(
+                '<section id="source-view" class="inventory" hidden><h2>源码快照</h2><button id="source-back">返回流程</button>'
+            )
+            + p(self.t("只显示所选证据中的源码；行号为生成时快照。"))
             + "".join(files)
             + "</section>"
         )

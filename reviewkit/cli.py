@@ -13,6 +13,7 @@ from .render import render
 from .business import extract_business, pin_sources
 from .build_cache import build_key, can_reuse
 from .runtime import index_cache
+from .i18n import resolve_language, explanation_language
 
 HOME = Path(__file__).resolve().parent.parent
 
@@ -70,6 +71,16 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--bytes", type=int, default=24000)
     p.add_argument("--symbol", help="只取 facts 中的某个符号，避免重复发送整个业务")
+    for name in ["function", "business", "render", "packet"]:
+        command_parser = sub.choices[name]
+        command_parser.add_argument(
+            "--output-language",
+            default="auto",
+            help="auto, zh/中文 or en/English; independent of --language rust",
+        )
+        command_parser.add_argument(
+            "--prompt", help="Natural-language request used by automatic output-language selection"
+        )
     args = parser.parse_args(argv)
     started = time.perf_counter()
     try:
@@ -91,6 +102,11 @@ def main(argv=None):
         if args.command == "render":
             facts = read_json(args.facts)
             notes = read_json(args.explanations)
+            language = resolve_language(
+                args.output_language,
+                args.prompt,
+                notes.get("output_language", facts.get("output_language", "zh")),
+            )
             output(
                 {
                     "html": str(Path(args.html).resolve()),
@@ -101,6 +117,7 @@ def main(argv=None):
                         args.title or facts.get("title", "代码流程 Review"),
                         args.link_mode,
                         args.link_template,
+                        language,
                     ),
                 }
             )
@@ -126,6 +143,9 @@ def main(argv=None):
             return 0
         if args.command == "packet":
             facts = read_json(args.facts)
+            facts["output_language"] = resolve_language(
+                args.output_language, args.prompt, facts.get("output_language", "zh")
+            )
             if args.symbol:
                 from .engine import choose
 
@@ -176,6 +196,17 @@ def main(argv=None):
         out.mkdir(parents=True, exist_ok=True)
         notes_path = Path(args.explanations) if args.explanations else out / "explanations.json"
         existing_notes = read_json(notes_path) if notes_path.exists() else None
+        args.resolved_output_language = resolve_language(
+            args.output_language, args.prompt, (existing_notes or {}).get("output_language", "zh")
+        )
+        if not args.explanations:
+            localized_notes = out / f"explanations.{args.resolved_output_language}.json"
+            if localized_notes.exists() and (
+                existing_notes is None
+                or explanation_language(existing_notes) != args.resolved_output_language
+            ):
+                notes_path = localized_notes
+                existing_notes = read_json(notes_path)
         key = build_key(args, index, manifest, existing_notes, HOME)
         if not args.refresh and can_reuse(out, key, index):
             stats = read_json(out / "build-stats.json")
@@ -195,23 +226,32 @@ def main(argv=None):
             else extract(index, selectors, args.depth, args.max_nodes)
         )
         facts["title"] = title
+        facts["output_language"] = args.resolved_output_language
         facts["parse_errors"] = [p for p, data in index["files"].items() if data["parse_error"]]
         if any(f["parse_error"] for f in facts["functions"]):
             raise ValueError("选定函数所在文件存在语法错误，拒绝生成看似完整的卡片；请先修复源码")
-        if args.explanations:
-            notes = read_json(args.explanations)
-        elif (out / "explanations.json").exists():
-            notes = read_json(out / "explanations.json")
-        else:
-            notes = blank_explanations(facts)
+        notes = existing_notes if existing_notes is not None else blank_explanations(facts)
         validate_explanations(notes, facts)
         packet = make_packet(facts, args.packet_bytes)
-        report = render(facts, notes, out / "index.html", title, args.link_mode, args.link_template)
+        report = render(
+            facts,
+            notes,
+            out / "index.html",
+            title,
+            args.link_mode,
+            args.link_template,
+            args.resolved_output_language,
+        )
         write_json(out / "facts.json", facts)
         # A separate seed never overwrites human/AI explanations on rebuild.
         write_json(out / "explanations.seed.json", blank_explanations(facts))
-        if args.explanations or not (out / "explanations.json").exists():
+        legacy_notes = out / "explanations.json"
+        if not legacy_notes.exists() or (
+            args.explanations
+            and explanation_language(read_json(legacy_notes)) == explanation_language(notes)
+        ):
             write_json(out / "explanations.json", notes)
+        write_json(out / f"explanations.{explanation_language(notes)}.json", notes)
         packet_path = out / "evidence-packet.json"
         packet_path.write_text(
             json.dumps(packet, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"

@@ -1,5 +1,7 @@
 # Business views and branches
 
+Output language is separate from source analysis. Pass `--output-language zh|en` according to the user's explicit instruction or prompt language. Explanation JSON declares `output_language` (legacy = zh); top-level `title` and `flow.start_label/end_label` provide localized labels. Keep each language in its own explanation file, preserving evidence hashes and the other language. Code and identifiers are never translated. A missing language is requested rather than silently mixing prose.
+
 One business node can cite multiple functions and non-Rust context. Stable node IDs belong to the business; they are independent of function names. Analysis still only parses Rust.
 
 ```json

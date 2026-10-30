@@ -1,0 +1,544 @@
+{
+  "schema_version": 1,
+  "output_language": "en",
+  "title": "Document import · 14-stage example",
+  "flow": {
+    "start_label": "Submit document",
+    "end_label": "Document ready"
+  },
+  "evidence_hash": "ed8b4be86b3f01059cccf702f0820c05be7fa58945a7132db1d446185e0d8fc5",
+  "cards": {
+    "business::stage_1": {
+      "title": "Accept document",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Accept document",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "Step failed",
+          "state": "Stop the pipeline",
+          "items": [
+            {
+              "condition": "Input contains error_1 or is empty",
+              "returns": "Err(\"accept failed\")",
+              "handling": "Return the error; skip subsequent steps"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "b383fce763784293a74560e0befaea68cac39fcc312801d0cd7ff3d19487a5e5"
+    },
+    "business::stage_2": {
+      "title": "Read source",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Read source",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "Step failed",
+          "state": "Stop the pipeline",
+          "items": [
+            {
+              "condition": "Input contains error_2 or is empty",
+              "returns": "Err(\"open_source failed\")",
+              "handling": "Return the error; skip subsequent steps"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "dd40a95917a94c371661ba77ac505aa578210c1c4a00298e2fffe46caa50faf1"
+    },
+    "business::stage_3": {
+      "title": "Decode content",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Decode content",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "Step failed",
+          "state": "Stop the pipeline",
+          "items": [
+            {
+              "condition": "Input contains error_3 or is empty",
+              "returns": "Err(\"decode failed\")",
+              "handling": "Return the error; skip subsequent steps"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "52d96e13b29e532a3e533937c8bb2f979c918a6ade65993da136301b09207041"
+    },
+    "business::stage_4": {
+      "title": "Parse document",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Parse document",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "Step failed",
+          "state": "Stop the pipeline",
+          "items": [
+            {
+              "condition": "Input contains error_4 or is empty",
+              "returns": "Err(\"parse failed\")",
+              "handling": "Return the error; skip subsequent steps"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "13e26d2a1d369d3c94c7982e653c6405015aeb851aa770a055b66543e7fa9fec"
+    },
+    "business::stage_5": {
+      "title": "Split paragraphs",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Split paragraphs",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "Step failed",
+          "state": "Stop the pipeline",
+          "items": [
+            {
+              "condition": "Input contains error_5 or is empty",
+              "returns": "Err(\"split failed\")",
+              "handling": "Return the error; skip subsequent steps"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "60192378dfbbfb07dbe52d40ae3239c5338c861a6636b9910f01abc6be0aedc3"
+    },
+    "business::stage_6": {
+      "title": "Optional cleanup",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Optional cleanup",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "optional",
+          "kind": "degrade",
+          "title": "Optional processing unavailable",
+          "state": "Keep the previous result",
+          "items": [
+            {
+              "condition": "Input contains error_6 or is empty",
+              "returns": "Err(\"clean failed\")",
+              "handling": "Retain the previous value and continue"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "5c9fee86396d0623da105a533640c14418d6abf895e8c3a6a3d0003e6b1ee8aa"
+    },
+    "business::stage_7": {
+      "title": "Optional review",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Optional review",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "optional",
+          "kind": "degrade",
+          "title": "Optional processing unavailable",
+          "state": "Keep the previous result",
+          "items": [
+            {
+              "condition": "Input contains error_7 or is empty",
+              "returns": "Err(\"review failed\")",
+              "handling": "Retain the previous value and continue"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "cb48d8a3922135aa54a2fbb9e3304807ffe1a540615922a95c009e55d36a0928"
+    },
+    "business::stage_8": {
+      "title": "Optional annotation",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Optional annotation",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "optional",
+          "kind": "degrade",
+          "title": "Optional processing unavailable",
+          "state": "Keep the previous result",
+          "items": [
+            {
+              "condition": "Input contains error_8 or is empty",
+              "returns": "Err(\"annotate failed\")",
+              "handling": "Retain the previous value and continue"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "48380fca206d84322ab8904057aae23c321b8ae680155900b70d243ab7ba07d5"
+    },
+    "business::stage_9": {
+      "title": "Optional translation",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Optional translation",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "optional",
+          "kind": "degrade",
+          "title": "Optional processing unavailable",
+          "state": "Keep the previous result",
+          "items": [
+            {
+              "condition": "Input contains error_9 or is empty",
+              "returns": "Err(\"translate failed\")",
+              "handling": "Retain the previous value and continue"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "2c365202c5223c5e99d5850295a9d04ea308988280570cf0b87dfa8e9575fc5f"
+    },
+    "business::stage_10": {
+      "title": "Optional preview",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Optional preview",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "optional",
+          "kind": "degrade",
+          "title": "Optional processing unavailable",
+          "state": "Keep the previous result",
+          "items": [
+            {
+              "condition": "Input contains error_10 or is empty",
+              "returns": "Err(\"preview failed\")",
+              "handling": "Retain the previous value and continue"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "7b8f66e76cabfe0448932c7bed7b8f34942a8ed253ad27acff1e6c00e2736c6c"
+    },
+    "business::stage_11": {
+      "title": "Commit result",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Commit result",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "Step failed",
+          "state": "Stop the pipeline",
+          "items": [
+            {
+              "condition": "Input contains error_11 or is empty",
+              "returns": "Err(\"commit failed\")",
+              "handling": "Return the error; skip subsequent steps"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "2ca791230a54b49e5d07267deed05e38ec5ff151120525c1202caa4a29993874"
+    },
+    "business::stage_12": {
+      "title": "Collect batch",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Collect batch",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "Step failed",
+          "state": "Stop the pipeline",
+          "items": [
+            {
+              "condition": "Input contains error_12 or is empty",
+              "returns": "Err(\"collect failed\")",
+              "handling": "Return the error; skip subsequent steps"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "0ecf56b5e9e6db371a1c334e00a1593cab38426a50a59c161fbf9db813f306b7"
+    },
+    "business::stage_13": {
+      "title": "Complete task",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Complete task",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Continue to the next stage",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "Step failed",
+          "state": "Stop the pipeline",
+          "items": [
+            {
+              "condition": "Input contains error_13 or is empty",
+              "returns": "Err(\"finish failed\")",
+              "handling": "Return the error; skip subsequent steps"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "c4034113f9a7fdfb930b2a913ce11272beeeca46a51e7d04d9186314f9b38e80"
+    },
+    "business::stage_14": {
+      "title": "Read result",
+      "scope": "Synthetic document workflow",
+      "input_title": "Previous document value",
+      "inputs": [
+        "A string is passed; no file or network access."
+      ],
+      "output_title": "Retained document value",
+      "outputs": [
+        "Return the document on success; run retains the previous value if an optional step fails."
+      ],
+      "steps": [
+        {
+          "title": "Read result",
+          "detail": "Check this step's failure marker; return the document value when it passes."
+        }
+      ],
+      "state": "Final result is readable",
+      "branches": [
+        {
+          "id": "failed",
+          "kind": "error",
+          "title": "Step failed",
+          "state": "Stop the pipeline",
+          "items": [
+            {
+              "condition": "Input contains error_14 or is empty",
+              "returns": "Err(\"read_result failed\")",
+              "handling": "Return the error; skip subsequent steps"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Public synthetic example for checking the template and workflow, not a production implementation."
+      ],
+      "evidence_hash": "a5ea117ce95f035055827478b391d1332c250c7691cd6719aec3bb0e511de69b"
+    }
+  }
+}

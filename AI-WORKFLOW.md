@@ -2,6 +2,8 @@
 
 使用已安装的 `code-review`，或执行 `python review.py`。Skill 内使用其 `scripts/review.py`。不要为例行 review 重写页面、安装浏览器或建立新的运行实验。
 
+输出语言先按用户明确指定，否则按用户自然语言提示词：中文 zh，英文 en；忽略提示中的代码/路径。所有生成、render、packet 命令传 --output-language zh|en。解释标记 output_language，按语言保存为 explanations.zh.json / explanations.en.json；翻译仅补 prose，保留证据摘要、源码、符号及已有语言版本。needs_translation 表示需要由 AI 补充目标语言解释，工具不会联网翻译。
+
 1. 函数：`code-review function --repo REPO --symbol SYMBOL --file RELATIVE_FILE --out OUTPUT`。
 2. 业务：优先复用已有清单，使用 `code-review business --manifest FLOW.json --repo REPO --out OUTPUT`。新流程才定位节点，Rust 来源优先用 `file + symbol`；其他语言暂作上下文范围。
 3. 先看简短结果中的 `html_reused`、`stale_cards` 和 `unresolved_calls`。有效解释直接复用；未解析标准库/外部调用不必逐个追查，除非它影响当前业务问题。

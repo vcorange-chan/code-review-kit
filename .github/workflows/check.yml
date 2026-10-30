@@ -47,10 +47,12 @@ jobs:
           node-version: '24'
       - run: python -m pip install .
       - run: code-review business --manifest examples/document-pipeline/business.json --explanations examples/document-pipeline/explanations.json --out out/document-pipeline --depth 0 --max-nodes 64
+      - run: code-review business --manifest examples/document-pipeline/business.json --explanations examples/document-pipeline/explanations.en.json --output-language en --out out/document-pipeline-en --depth 0 --max-nodes 64
       - run: npm install --no-save --ignore-scripts --package-lock=false playwright@1.64.1
       - run: npx playwright install --with-deps chromium
       - run: sudo apt-get install -y fonts-noto-cjk
       - run: node scripts/capture_demo.mjs out/document-pipeline/index.html out/preview/review-example.png
+      - run: node scripts/capture_demo.mjs out/document-pipeline-en/index.html out/preview/review-example-en.png
       - uses: actions/upload-artifact@v4
         with:
           name: public-demo-preview

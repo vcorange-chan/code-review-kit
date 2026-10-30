@@ -64,6 +64,34 @@ with tempfile.TemporaryDirectory() as temp:
         and not report["stale_cards"]
     )
     assert state.is_dir() and not (skill / "scripts/tool/.deps").exists()
+    english = json.loads(
+        run(
+            skill / "scripts/review.py",
+            "business",
+            "--manifest",
+            ROOT / "examples/document-pipeline/business.json",
+            "--repo",
+            ROOT / "examples/document-pipeline",
+            "--explanations",
+            ROOT / "examples/document-pipeline/explanations.en.json",
+            "--output-language",
+            "en",
+            "--depth",
+            "0",
+            "--max-nodes",
+            "64",
+            "--out",
+            folder / "report-en",
+            "--cache",
+            folder / "cache",
+        )
+    )
+    assert (
+        english["output_language"] == "en"
+        and english["explained"] == 14
+        and not english["needs_translation"]
+    )
+    assert '<html lang="en">' in (folder / "report-en/index.html").read_text(encoding="utf-8")
     if os.name != "nt":
         skill.chmod(0o755)
         for path in skill.rglob("*"):

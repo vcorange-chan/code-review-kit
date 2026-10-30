@@ -3,6 +3,7 @@ import datetime
 from pathlib import Path
 from .storage import digest, resolve_source
 from .languages import adapter_for
+from .i18n import Translator, explanation_language
 
 
 def all_functions(index):
@@ -171,6 +172,23 @@ def make_packet(facts, budget):
         "types": [],
         "omitted": [],
     }
+    language = facts.get("output_language", "zh")
+    packet["output_language"] = language
+    packet["presentation"] = {
+        "title": facts.get("title", ""),
+        "flow": {
+            k: v for k, v in facts.get("flow", {}).items() if k in {"start_label", "end_label"}
+        },
+    }
+    if language == "en":
+        packet["purpose"] = (
+            "Return explanation JSON only. Write all business prose in English; do not rewrite HTML."
+        )
+        packet["rules"] = [
+            "Use evidence; preserve unknowns.",
+            "Use symbol IDs for references.",
+            "Explain success, errors and recovery. Candidate calls are not dispatch proof.",
+        ]
     repo = Path(facts["repository"])
 
     def size():
@@ -203,7 +221,9 @@ def make_packet(facts, budget):
         packet["omitted"].pop()
     packet["budget_bytes"] = budget
     packet["omissions_notice"] = (
-        "范围受字节预算限制，缺少证据时用 packet --symbol 指定节点另取。完整事实保存在 facts.json。"
+        "Evidence is limited by the byte budget. Use packet --symbol for missing evidence. Full facts remain in facts.json."
+        if language == "en"
+        else "范围受字节预算限制，缺少证据时用 packet --symbol 指定节点另取。完整事实保存在 facts.json。"
     )
     while size() > budget and packet["functions"]:
         packet["functions"].pop()
@@ -213,13 +233,16 @@ def make_packet(facts, budget):
 
 
 def blank_explanations(facts):
+    language = facts.get("output_language", "zh")
+    t = Translator(language)
     return {
         "schema_version": 1,
+        "output_language": language,
         "evidence_hash": facts["evidence_hash"],
         "cards": {
             i: {
                 "evidence_hash": facts["card_evidence"][i],
-                "title": "待补充业务说明",
+                "title": t("待补充业务说明"),
                 "input": "",
                 "steps": [],
                 "normal_output": "",
@@ -239,6 +262,18 @@ def validate_explanations(value, facts):
         or not isinstance(value.get("cards"), dict)
     ):
         raise ValueError("解释 JSON 需要 schema_version:1 和 cards 对象")
+    explanation_language(value)
+    if "title" in value and not isinstance(value["title"], str):
+        raise ValueError("Explanation title must be text")
+    if "flow" in value and (
+        not isinstance(value["flow"], dict)
+        or any(
+            not isinstance(v, str)
+            for k, v in value["flow"].items()
+            if k in {"start_label", "end_label"}
+        )
+    ):
+        raise ValueError("Explanation flow labels must be text")
     known = {f["id"] for f in facts["functions"]}
     for symbol, card in value["cards"].items():
         if symbol not in known:
