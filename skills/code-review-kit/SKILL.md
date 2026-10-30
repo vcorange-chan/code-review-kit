@@ -2,7 +2,7 @@
 name: code-review-kit
 description: Generate interactive source-code and business-flow review HTML with collapsible input, implementation, output, error and degradation cards. Use when mapping a function or business workflow, or updating an existing review. Rust extraction; other source files can be cited as context.
 metadata:
-  runtime: Python 3.10+; pip access for first source-extraction setup. Rendering facts uses the standard library.
+  runtime: Python 3.11+; pip access for first source-extraction setup. Rendering facts uses the standard library.
 ---
 
 # Code Review Kit

@@ -9,7 +9,7 @@
 
 ## 安装
 
-Python 3.10+；支持 Windows、macOS、Linux。原生解析依赖按执行环境安装，不随 Skill 打包。
+Python 3.11+；支持 Windows、macOS、Linux。原生解析依赖按执行环境安装，不随 Skill 打包。
 
 ```sh
 git clone https://github.com/vcorange-chan/code-review-kit.git
@@ -81,6 +81,6 @@ python scripts/build_dist.py
 python scripts/smoke_skill.py
 ```
 
-CI 在 Windows/macOS/Linux 和 Python 3.10/3.12 上测试工具及实际 ZIP 安装路径，并检查 Pi 包安装。Skill 可被发现与可执行，不等于在某个用户的 Cowork 账号里已完成实际任务。
+CI 在 Windows/macOS/Linux 和 Python 3.11/3.12 上测试工具及实际 ZIP 安装路径，并检查 Pi 包安装。Skill 可被发现与可执行，不等于在某个用户的 Cowork 账号里已完成实际任务。
 
 MIT License。发布内容不含本地缓存、原生依赖、私有项目的流程数据或生成报告。
