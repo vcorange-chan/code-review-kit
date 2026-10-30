@@ -10,8 +10,8 @@
     "nodes": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["id", "sources"], "properties": {
       "id": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
       "label": {"type": "string"},
-      "sources": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["file", "line"], "properties": {
-        "file": {"type": "string"}, "line": {"type": "integer", "minimum": 1}, "end_line": {"type": "integer", "minimum": 1}, "label": {"type": "string"}
+      "sources": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["file"], "anyOf": [{"required":["symbol"]},{"required":["line"]}], "properties": {
+        "file": {"type": "string"}, "symbol":{"type":"string"}, "offset":{"type":"integer"}, "end_offset":{"type":"integer"}, "line": {"type": "integer", "minimum": 1}, "end_line": {"type": "integer", "minimum": 1}, "label": {"type": "string"}
       }}}
     }}},
     "edges": {"type": "array", "items": {"type": "object", "required": ["from", "to", "kind"], "properties": {

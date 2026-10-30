@@ -11,8 +11,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 2,
-          "end_line": 5,
+          "symbol": "accept",
           "label": "接收文档实现"
         }
       ]
@@ -23,8 +22,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 6,
-          "end_line": 9,
+          "symbol": "open_source",
           "label": "读取来源实现"
         }
       ]
@@ -35,8 +33,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 10,
-          "end_line": 13,
+          "symbol": "decode",
           "label": "解码内容实现"
         }
       ]
@@ -47,8 +44,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 14,
-          "end_line": 17,
+          "symbol": "parse",
           "label": "解析文档实现"
         }
       ]
@@ -59,8 +55,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 18,
-          "end_line": 21,
+          "symbol": "split",
           "label": "拆分段落实现"
         }
       ]
@@ -71,8 +66,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 22,
-          "end_line": 25,
+          "symbol": "clean",
           "label": "可选清理实现"
         }
       ]
@@ -83,8 +77,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 26,
-          "end_line": 29,
+          "symbol": "review",
           "label": "可选复核实现"
         }
       ]
@@ -95,8 +88,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 30,
-          "end_line": 33,
+          "symbol": "annotate",
           "label": "可选标注实现"
         }
       ]
@@ -107,8 +99,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 34,
-          "end_line": 37,
+          "symbol": "translate",
           "label": "可选翻译实现"
         }
       ]
@@ -119,8 +110,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 38,
-          "end_line": 41,
+          "symbol": "preview",
           "label": "可选预览实现"
         }
       ]
@@ -131,8 +121,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 42,
-          "end_line": 45,
+          "symbol": "commit",
           "label": "提交结果实现"
         }
       ]
@@ -143,8 +132,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 46,
-          "end_line": 49,
+          "symbol": "collect",
           "label": "汇总批次实现"
         }
       ]
@@ -155,8 +143,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 50,
-          "end_line": 53,
+          "symbol": "finish",
           "label": "完成任务实现"
         }
       ]
@@ -167,8 +154,7 @@
       "sources": [
         {
           "file": "src/lib.rs",
-          "line": 54,
-          "end_line": 57,
+          "symbol": "read_result",
           "label": "查看结果实现"
         }
       ]

@@ -10,8 +10,8 @@ One business node can cite multiple functions and non-Rust context. Stable node 
   "start_label": "Submit",
   "end_label": "Ready",
   "nodes": [
-    {"id":"read","label":"read_source","sources":[{"file":"src/lib.rs","line":1,"end_line":3,"label":"Read source"}]},
-    {"id":"save","label":"save_result","sources":[{"file":"src/lib.rs","line":4,"label":"Save result"}]}
+    {"id":"read","label":"read_source","sources":[{"file":"src/lib.rs","symbol":"read_source","label":"Read source"}]},
+    {"id":"save","label":"save_result","sources":[{"file":"src/lib.rs","symbol":"save_result","label":"Save result"}]}
   ],
   "edges": [
     {"from":"read","to":"save","kind":"success"},
@@ -21,6 +21,8 @@ One business node can cite multiple functions and non-Rust context. Stable node 
 ```
 
 The success edges connect the ordered nodes in one vertical spine. Resume edges identify a specific degradation branch and target node, at `input` or `output`; forward, same-node and backward targets are allowed. A terminal error branch has no resume edge. Node IDs use letters, numbers, underscores and hyphens.
+
+Rust anchors should use `file + symbol` (short qualified name or full ID), for functions or named types. The index supplies current lines. Optional `offset/end_offset` select a range relative to the symbol start; edits within that function/range still require review. Non-Rust context uses explicit `line/end_line`. Legacy Rust line anchors remain readable with a warning. `pin-sources` writes a new manifest without rebinding explanations.
 
 Explain a view under `cards["business::read"]` in explanations JSON. Preserve its evidence hash from the generated seed. Optional `inputs` and `outputs` are detail arrays; `scope` and `state` describe the business. `steps` contain title, detail and optional reference symbol ID.
 

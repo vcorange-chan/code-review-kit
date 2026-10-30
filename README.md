@@ -2,6 +2,8 @@
 
 把源码证据和业务解释生成可折叠、可追溯的 HTML 地图。默认不调用模型 API；以缓存、精简证据包和固定模板减少重复工作。
 
+![合成文档流程：绿色成功主脉、红色错误分支、金色降级返回](docs/review-example.png)
+
 - 小方框：输入与正常输出；大方框：功能、实现、状态与源码链接。
 - 绿色直线主脉：成功顺序；红色侧分支：错误／中止；金色虚线：降级并回到指定节点。
 - 一个业务节点可关联多个函数及其他语言的源码上下文，不必把业务节点等同于函数。
@@ -23,7 +25,7 @@ code-review doctor
 Pi：
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.2.0
+pi install git:github.com/vcorange-chan/code-review-kit@v0.3.0
 ```
 
 使用 `/skill:code-review-kit`。Cowork：从 GitHub Release 下载 `code-review-kit-skill.zip`，在 Customize → Skills 上传；需要启用代码执行。上传包是自包含的，首次提取时在实际执行环境安装依赖。它不假定可访问宿主机的盘符。详见 [安装说明](skills/code-review-kit/references/install.md)。
@@ -46,7 +48,13 @@ code-review business --manifest examples/document-pipeline/business.json --expla
 
 公开示例是一个可移植的合成文档流程：14 个阶段，包含 5 个降级返回。它不是来自私有项目的源码快照。清单可使用 `--repo` 覆盖路径，适合另一台机器或 Cowork 挂载目录。
 
-节点关联多个 `sources`；`success` 边连接直线主脉，`resume` 边指定某个降级分支回到哪个节点的 input/output。格式见 [流程说明](skills/code-review-kit/references/flow-format.md)。没有解释时仍可生成基础卡片，未知含义明确标注。
+节点关联多个 `sources`；Rust 来源推荐 `{"file":"src/lib.rs","symbol":"accept"}`，行号会随索引更新。`success` 边连接直线主脉，`resume` 边指定某个降级分支回到哪个节点的 input/output。格式见 [流程说明](skills/code-review-kit/references/flow-format.md)。没有解释时仍可生成基础卡片，未知含义明确标注。
+
+旧行号清单可以显式迁移，原解释不会自动换绑：
+
+```sh
+code-review pin-sources --manifest old-flow.json --repo /path/to/repository --out pinned-flow.json
+```
 
 ## AI 只补解释，不重写页面
 
@@ -64,15 +72,31 @@ code-review render --facts review/facts.json --explanations review/explanations.
 code-review packet --facts review/facts.json --symbol some_function --out packet.json --bytes 10000
 ```
 
-已绑定的解释可继续复用。相关函数、来源或图结构改变时标为待复核；纯行号移动不影响普通函数解释。不能为了消除提示直接给旧解释换新摘要。CLI 和所有 AI 入口调用同一核心与模板。
+已绑定的解释可继续复用。相关函数、来源或图结构改变时标为待复核；符号锚点不因函数前插入代码而改变身份。无关类型的 derive 不再使整份文件的解释过期；相关类型、函数属性和可见导入仍保守跟踪。不能为了消除提示直接给旧解释换新摘要。CLI 和所有 AI 入口调用同一核心与模板。
+
+## 可分享的源码链接
+
+默认 HTML 内嵌所选源码片段，点击引用可在页面内定位行号，不依赖生成机器的盘符。复制位置为仓库相对路径。源码文本本身仍可能包含项目写入的敏感内容，分享前检查实际内容。
+
+需要其他链接方式时显式选择：
+
+```sh
+code-review function --repo /path/to/repository --symbol run --out review --link-mode relative
+code-review function --repo /path/to/repository --symbol run --out review --link-template 'https://github.com/OWNER/REPO/blob/REV/{path}#L{line}'
+code-review function --repo /path/to/repository --symbol run --out review --link-template 'vscode://file{absolute_path}:{line}'
+```
+
+`relative` 需要随报告保留源码目录结构；`local` 显式生成本机文件链接。模板支持 `{path}`、`{absolute_path}`、`{line}`、`{end_line}`，其中 absolute_path 是带前导斜杠的 URI 路径。默认内嵌模式提供行号定位；普通文件链接不承诺浏览器按行跳转。
 
 源码、解释、清单和模板均未变时直接复用 HTML，不把完整报告再交给模型。其他时候按文件摘要复用语法索引。源码只读；默认不执行目标项目，不创建运行实验。
 
 ## 边界与开发
 
-解析为有范围限制的语法候选分析，宏、trait/泛型、运行时路由和条件编译未做完整求解。非 Rust 引用作为上下文保留，不代表支持其自动调用分析。模型解释也不因摘要匹配就自动正确。
+解析为有范围限制的语法候选分析，宏、trait/泛型、运行时路由和条件编译未做完整求解。对象方法会显示候选或未解析原因；直接参数类型注解只用于保守寻找候选，不等于类型检查。非 Rust 引用作为上下文保留，不代表支持其自动调用分析。模型解释也不因摘要匹配就自动正确。
 
-`reviewkit/rust.py` 提供语言适配器；`reviewkit/business.py` 处理多来源业务视图；`reviewkit/templates/` 是唯一模板源。模型/API 入口只读写同一种解释 JSON。
+`reviewkit/languages.py` 定义适配器契约，目前只注册 Rust。未来 Dart、Zig、C、Go 在适配器内实现语法规则，复用业务、解释、链接和模板。模块边界见 [架构说明](docs/architecture.md)。
+
+0.3 改进了证据摘要规则，旧版本解释可能需要一次复核，工具不会自动隐藏该提示。
 
 ```sh
 python -m unittest discover -s tests -v

@@ -1,6 +1,11 @@
 const map=document.getElementById('map'),paths=document.getElementById('paths');
 const stages=[...document.querySelectorAll('.stage')];
 const jump=document.getElementById('jump');
+let sourceScroll=0;
+function showSnapshot(id){const target=document.getElementById(id),view=document.getElementById('source-view');if(!target||!view)return;if(view.hidden)sourceScroll=scrollY;view.hidden=false;target.closest('details').open=true;document.querySelectorAll('.source-line.focused').forEach(n=>n.classList.remove('focused'));target.classList.add('focused');requestAnimationFrame(()=>target.scrollIntoView({behavior:'smooth',block:'center'}))}
+document.querySelectorAll('[data-snapshot]').forEach(a=>a.addEventListener('click',event=>{event.preventDefault();showSnapshot(a.dataset.snapshot);history.replaceState(null,'','#'+a.dataset.snapshot)}));
+const sourceBack=document.getElementById('source-back');if(sourceBack)sourceBack.addEventListener('click',()=>{document.getElementById('source-view').hidden=true;history.replaceState(null,'',location.href.split('#')[0]);scrollTo({top:sourceScroll,behavior:'smooth'})});
+if(location.hash.startsWith('#source-'))showSnapshot(location.hash.slice(1));
 stages.forEach((stage,i)=>{const op=document.createElement('option');op.value=stage.id;op.textContent=`${i+1} · ${stage.querySelector('h2').textContent}`;jump.append(op)});
 jump.addEventListener('change',()=>document.getElementById(jump.value).scrollIntoView({behavior:'smooth',block:'start'}));
 document.getElementById('expand').addEventListener('click',()=>stages.forEach(s=>{const d=s.querySelector('.function>details');if(d)d.open=true}));

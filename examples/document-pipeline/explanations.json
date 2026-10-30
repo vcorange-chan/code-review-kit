@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "evidence_hash": "3a8b5f5cb8f349a50af6390385ab4bba4921f9d84a13a82c43d5f28c6d41b2ff",
+  "evidence_hash": "ed8b4be86b3f01059cccf702f0820c05be7fa58945a7132db1d446185e0d8fc5",
   "cards": {
     "business::stage_1": {
       "title": "接收文档",
@@ -38,7 +38,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "2804532cf820435ddbf883f0efe10afda32059f4aea0b8704cc4b18e1ebd0179"
+      "evidence_hash": "b383fce763784293a74560e0befaea68cac39fcc312801d0cd7ff3d19487a5e5"
     },
     "business::stage_2": {
       "title": "读取来源",
@@ -76,7 +76,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "5eaeac797036382b9dca5304fc52a30ff23008f62b04a530343fb5c5761f0fc1"
+      "evidence_hash": "dd40a95917a94c371661ba77ac505aa578210c1c4a00298e2fffe46caa50faf1"
     },
     "business::stage_3": {
       "title": "解码内容",
@@ -114,7 +114,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "403bf62aca2bae0042aff0f6cb42b6a2cdf3df60bbbcb50d4b59d5f1d0b84be7"
+      "evidence_hash": "52d96e13b29e532a3e533937c8bb2f979c918a6ade65993da136301b09207041"
     },
     "business::stage_4": {
       "title": "解析文档",
@@ -152,7 +152,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "695e8379b5e56a795d9b700e7e38e3054504385221d2808c4bcde802c7859339"
+      "evidence_hash": "13e26d2a1d369d3c94c7982e653c6405015aeb851aa770a055b66543e7fa9fec"
     },
     "business::stage_5": {
       "title": "拆分段落",
@@ -190,7 +190,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "22a4e55243b66ee83eafda657d1c6aa7bd0877a460b13decab30937915a5449b"
+      "evidence_hash": "60192378dfbbfb07dbe52d40ae3239c5338c861a6636b9910f01abc6be0aedc3"
     },
     "business::stage_6": {
       "title": "可选清理",
@@ -228,7 +228,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "b9d404b5e650c628970865b2fe42b9d4dd600b26cc6b1f95af8e69917cc6aa85"
+      "evidence_hash": "5c9fee86396d0623da105a533640c14418d6abf895e8c3a6a3d0003e6b1ee8aa"
     },
     "business::stage_7": {
       "title": "可选复核",
@@ -266,7 +266,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "be9b9f1b8ce7d9ccb36e36d7dd00c49c2189a6055e0e294829ce9dda2bd04e3a"
+      "evidence_hash": "cb48d8a3922135aa54a2fbb9e3304807ffe1a540615922a95c009e55d36a0928"
     },
     "business::stage_8": {
       "title": "可选标注",
@@ -304,7 +304,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "9701dc3e6861f4971eb7496be579c6d9d06d1a15c7e60744a0096ec2b67ea8c4"
+      "evidence_hash": "48380fca206d84322ab8904057aae23c321b8ae680155900b70d243ab7ba07d5"
     },
     "business::stage_9": {
       "title": "可选翻译",
@@ -342,7 +342,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "15693b9da015fc547bebb9a96c8e09a3584170d5c85f160eadb315a1127b2217"
+      "evidence_hash": "2c365202c5223c5e99d5850295a9d04ea308988280570cf0b87dfa8e9575fc5f"
     },
     "business::stage_10": {
       "title": "可选预览",
@@ -380,7 +380,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "f13ebaac2dd2449dfbf05acd83c95e2f60e8799305888de0f5d6749765f8c587"
+      "evidence_hash": "7b8f66e76cabfe0448932c7bed7b8f34942a8ed253ad27acff1e6c00e2736c6c"
     },
     "business::stage_11": {
       "title": "提交结果",
@@ -418,7 +418,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "1cd34e28ba7bda00cfd1719146ab48f1e345506640da668433dd965854aada60"
+      "evidence_hash": "2ca791230a54b49e5d07267deed05e38ec5ff151120525c1202caa4a29993874"
     },
     "business::stage_12": {
       "title": "汇总批次",
@@ -456,7 +456,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "5d2e16a7f3c8b49c07b3c49e4b94bc4f4368cd488e60b06e73ebf138a47bbca6"
+      "evidence_hash": "0ecf56b5e9e6db371a1c334e00a1593cab38426a50a59c161fbf9db813f306b7"
     },
     "business::stage_13": {
       "title": "完成任务",
@@ -494,7 +494,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "f6489c29a17e3cf268ac3a04c5a1566a93f9e52413d75c148e6c3a06d0dead3f"
+      "evidence_hash": "c4034113f9a7fdfb930b2a913ce11272beeeca46a51e7d04d9186314f9b38e80"
     },
     "business::stage_14": {
       "title": "查看结果",
@@ -532,7 +532,7 @@
       "notes": [
         "这是公开的合成示例，用于验证模板与流程图，不代表实际产品实现。"
       ],
-      "evidence_hash": "e8f7c87d9b54491753311e4bc5a0d020a29aa1030b615ca590b4fcc1850642a7"
+      "evidence_hash": "a5ea117ce95f035055827478b391d1332c250c7691cd6719aec3bb0e511de69b"
     }
   }
 }
