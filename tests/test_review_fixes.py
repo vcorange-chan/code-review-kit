@@ -54,6 +54,15 @@ class ReviewFixTests(RepositoryTestCase):
             [e["reason"] for e in edges], ["polymorphic_receiver", "polymorphic_receiver"]
         )
 
+    def test_impl_generic_parameter_is_not_guessed_as_local_type(self):
+        self.put(
+            "lib.rs",
+            "struct T; impl T { fn send(&self) {} } struct Holder<T>(T); impl<T> Holder<T> { fn run(value: &T) { value.send(); } }",
+        )
+        edge = next(e for e in self.facts()["edges"] if e["name"] == "send")
+        self.assertEqual(edge["reason"], "polymorphic_receiver")
+        self.assertEqual(edge["candidates"], [])
+
     def test_unrelated_derive_does_not_invalidate_function(self):
         self.put("lib.rs", "struct Unrelated; fn run() {}")
         old = self.facts()

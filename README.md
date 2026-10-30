@@ -96,7 +96,7 @@ code-review function --repo /path/to/repository --symbol run --out review --link
 
 `reviewkit/languages.py` 定义适配器契约，目前只注册 Rust。未来 Dart、Zig、C、Go 在适配器内实现语法规则，复用业务、解释、链接和模板。模块边界见 [架构说明](docs/architecture.md)。
 
-0.3 改进了证据摘要规则，旧版本解释可能需要一次复核，工具不会自动隐藏该提示。
+0.3 改进了证据摘要规则，旧版本解释可能需要一次复核，工具不会自动隐藏该提示。七项外部 review 的核实结果与验证方式见 [改进记录](docs/review-findings.md)。
 
 ```sh
 python -m unittest discover -s tests -v
@@ -107,4 +107,4 @@ python scripts/smoke_skill.py
 
 CI 在 Windows/macOS/Linux 和 Python 3.11/3.12 上测试工具及实际 ZIP 安装路径，并检查 Pi 包安装。Skill 可被发现与可执行，不等于在某个用户的 Cowork 账号里已完成实际任务。
 
-MIT License。发布内容不含本地缓存、原生依赖、私有项目的流程数据或生成报告。
+MIT License。发布内容不含本地缓存、原生依赖或私有项目的流程数据与生成报告。Release 中的演示 HTML 仅使用公开合成示例。

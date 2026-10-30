@@ -38,7 +38,7 @@ def belongs(node, fn):
 class RustAdapter:
     language = "rust"
     suffixes = (".rs",)
-    version = "rust-syntax-9"
+    version = "rust-syntax-10"
 
     def parse(self, text, file):
         from ast_grep_py import SgRoot

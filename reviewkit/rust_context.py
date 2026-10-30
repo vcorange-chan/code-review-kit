@@ -65,9 +65,13 @@ def lexical_context(fn, catalog):
 
 
 def parameter_hints(fn):
-    generic = fn.field("type_parameters")
     generics = set()
-    if generic:
+    for owner in [fn, *fn.ancestors()]:
+        if owner.kind() not in {"function_item", "impl_item", "trait_item"}:
+            continue
+        generic = owner.field("type_parameters")
+        if not generic:
+            continue
         for n in generic.find_all(kind="type_parameter"):
             name = n.field("name")
             if name:
