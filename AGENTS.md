@@ -1,6 +1,6 @@
 # Review Kit
 
-先读 DECISIONS.md 和 AI-WORKFLOW.md。当前仅支持 Rust；CLI/AI 共用核心，解释为独立 JSON。未来语言通过适配器添加，不提前实现。
+先读 DECISIONS.md 和 AI-WORKFLOW.md。当前支持 Rust、Python、Dart 和混合业务；CLI/AI 共用核心，解释为独立 JSON。未来语言通过适配器添加，不提前实现。
 
 - 使用现成 CLI 生成 review，不重新编写页面。解释存 JSON，自动事实存 facts.json，模板在 reviewkit/templates/。
 - 默认不运行目标源码、不建立新媒体模拟实验、不调用模型 API。

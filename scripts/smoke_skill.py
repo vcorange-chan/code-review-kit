@@ -91,7 +91,54 @@ with tempfile.TemporaryDirectory() as temp:
         and english["explained"] == 14
         and not english["needs_translation"]
     )
-    assert '<html lang="en">' in (folder / "report-en/index.html").read_text(encoding="utf-8")
+    assert '<html lang="en">' in (folder / "report-en/index.html").read_text(
+        encoding="utf-8"
+    )
+    for language, relative, symbol in [
+        ("python", "polyglot/service.py", "normalize_document"),
+        ("dart", "polyglot/client.dart", "prepareRequest"),
+    ]:
+        summary = json.loads(
+            run(
+                skill / "scripts/review.py",
+                "function",
+                "--repo",
+                ROOT / "examples/document-pipeline",
+                "--language",
+                language,
+                "--file",
+                relative,
+                "--symbol",
+                symbol,
+                "--out",
+                folder / ("single-" + language),
+                "--cache",
+                folder / "cache",
+            )
+        )
+        assert summary["cards"] == 1
+    for language in ["zh", "en"]:
+        mixed = json.loads(
+            run(
+                skill / "scripts/review.py",
+                "business",
+                "--manifest",
+                ROOT / "examples/document-pipeline/mixed-business.json",
+                "--explanations",
+                ROOT / f"examples/document-pipeline/mixed-explanations.{language}.json",
+                "--output-language",
+                language,
+                "--depth",
+                "0",
+                "--out",
+                folder / ("mixed-" + language),
+                "--cache",
+                folder / "cache",
+            )
+        )
+        assert (
+            mixed["cards"] == 3 and mixed["explained"] == 3 and not mixed["stale_cards"]
+        )
     if os.name != "nt":
         skill.chmod(0o755)
         for path in skill.rglob("*"):
@@ -104,6 +151,8 @@ with tempfile.TemporaryDirectory() as temp:
                 "stale_cards": report["stale_cards"],
                 "native_platform_install": True,
                 "dependency_state_outside_skill": True,
+                "languages": doctor["languages"],
+                "mixed_cards": 3,
             }
         )
     )

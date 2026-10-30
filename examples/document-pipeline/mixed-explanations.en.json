@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "output_language": "en",
+  "evidence_hash": "5d3e7e527c6a5cf4b938f72549ffc24473361b9db89ca864f963b27f0aadb7c4",
+  "cards": {
+    "business::prepare": {
+      "evidence_hash": "4c972ca44858e434224f41ce893a403c197eb7e0fd92b638b06597202bc76430",
+      "title": "Dart: prepare request text",
+      "input": "A raw String, for example \"  hello  \".",
+      "steps": [
+        {
+          "title": "Trim the input",
+          "actor": "business::prepare",
+          "detail": "prepareRequest receives value and uses trim to produce trimmed; the original string is unchanged.",
+          "result": "trimmed, for example hello",
+          "next": "Check trimmed.isEmpty",
+          "reference": "business::prepare"
+        },
+        {
+          "title": "Choose the return path",
+          "actor": "business::prepare",
+          "detail": "If trimmed is empty, throw ArgumentError; otherwise return trimmed.",
+          "result": "Non-empty text, or ArgumentError",
+          "next": "The manifest hands successful output to the Python card",
+          "reference": "business::prepare"
+        }
+      ],
+      "normal_output": "A non-empty String. \"  hello  \" becomes \"hello\".",
+      "errors": [
+        {
+          "condition": "trimmed.isEmpty is true",
+          "returns": "throw ArgumentError('empty request')",
+          "handling": "Exit this function; do not enter later success nodes."
+        }
+      ],
+      "notes": [
+        "Cross-language handoffs are explicitly authored in the manifest; this fixture implements no FFI/RPC bridge. Only explicit branches are explained; implicit exceptions are not enumerated."
+      ],
+      "references": [
+        "business::prepare"
+      ]
+    },
+    "business::normalize": {
+      "evidence_hash": "ac63470f16b12858506585457948f0154ebf365cf58ad1b875706af434ea48ab",
+      "title": "Python: try an ASCII round trip",
+      "input": "The previous text, for example hello or 猫.",
+      "steps": [
+        {
+          "title": "Reject an empty value",
+          "actor": "business::normalize",
+          "detail": "If not value is true, raise ValueError; otherwise enter try.",
+          "result": "Non-empty input, or ValueError",
+          "next": "Try ASCII encoding and decoding",
+          "reference": "business::normalize"
+        },
+        {
+          "title": "Convert or retain the raw text",
+          "actor": "business::normalize",
+          "detail": "Return the str produced by encode(\"ascii\") then decode(\"ascii\"). If either operation raises UnicodeError, except returns the original value.",
+          "result": "hello returns unchanged; 猫 takes the fallback and still returns 猫",
+          "next": "Both returns reach this node’s normal output, then the Rust card",
+          "reference": "business::normalize"
+        }
+      ],
+      "normal_output": "A str: converted ASCII text on success, original text on the UnicodeError fallback.",
+      "errors": [
+        {
+          "condition": "not value is true",
+          "returns": "raise ValueError(\"empty document\")",
+          "handling": "Exit the function; skip encoding and later success nodes."
+        }
+      ],
+      "notes": [
+        "Cross-language handoffs are explicitly authored in the manifest; this fixture implements no FFI/RPC bridge. Only explicit branches are explained; implicit exceptions are not enumerated."
+      ],
+      "references": [
+        "business::normalize"
+      ],
+      "branches": [
+        {
+          "id": "keep_raw",
+          "kind": "degrade",
+          "title": "Keep raw text",
+          "items": [
+            {
+              "condition": "ASCII encoding or decoding raises UnicodeError",
+              "returns": "Original value",
+              "handling": "Resume at this node’s normal output, then continue to the Rust size gate"
+            }
+          ]
+        }
+      ]
+    },
+    "business::commit": {
+      "evidence_hash": "1e6523506893cf89564e4aa4b0186b1c6de099af2322a071280e0881ee0a085c",
+      "title": "Rust: check UTF-8 byte size",
+      "input": "Text is supplied to commit as &str; hello is 5 bytes and 猫 is 3 bytes.",
+      "steps": [
+        {
+          "title": "Check the size limit",
+          "actor": "business::commit",
+          "detail": "value.len() counts UTF-8 bytes. Return Err immediately if the count exceeds 4096; otherwise continue.",
+          "result": "An accepted size, or Err",
+          "next": "Return the size on the success path",
+          "reference": "business::commit"
+        },
+        {
+          "title": "Return the byte count",
+          "actor": "business::commit",
+          "detail": "Return Ok(value.len()). This is a byte count rather than a character count.",
+          "result": "Ok(usize)",
+          "next": "The business flow completes",
+          "reference": "business::commit"
+        }
+      ],
+      "normal_output": "Ok(usize): hello → Ok(5), 猫 → Ok(3).",
+      "errors": [
+        {
+          "condition": "value.len() > 4096",
+          "returns": "Err(\"document too large\")",
+          "handling": "Return immediately; produce no successful size."
+        }
+      ],
+      "notes": [
+        "Cross-language handoffs are explicitly authored in the manifest; this fixture implements no FFI/RPC bridge. Only explicit branches are explained; implicit exceptions are not enumerated."
+      ],
+      "references": [
+        "business::commit"
+      ]
+    }
+  },
+  "title": "Fictional document request · Dart / Python / Rust",
+  "flow": {
+    "start_label": "Input text",
+    "end_label": "Receive byte count"
+  }
+}

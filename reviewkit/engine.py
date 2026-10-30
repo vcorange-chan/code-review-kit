@@ -50,7 +50,9 @@ def extract(index, selectors, depth=2, max_nodes=16):
             continue
         selected[f["id"]] = f
         for c in f["calls"]:
-            resolution = adapter.resolve_call(c, f, by_name.get(c["short_name"], []))
+            resolution = adapter.resolve_call(
+                c, f, by_name.get(c.get("lookup_name", c["short_name"]), [])
+            )
             choices = resolution["candidates"]
             edges.append(
                 {
@@ -87,12 +89,17 @@ def extract(index, selectors, depth=2, max_nodes=16):
                     }
                 )
         for m in f["macros"]:
-            if any(re.search(r"\b" + re.escape(n) + r"\s*\(", m["text"]) for n in root_names):
+            if any(
+                re.search(r"\b" + re.escape(n) + r"\s*\(", m["text"])
+                for n in root_names
+            ):
                 macros.append({"caller": f["id"], "file": f["file"], **m})
     types = adapter.related_types(list(selected.values()), index)
     bindings = {}
     for f in selected.values():
-        bindings[f["id"]] = digest({"function": f["hash"], "module_context": f["context_hash"]})
+        bindings[f["id"]] = digest(
+            {"function": f["hash"], "module_context": f["context_hash"]}
+        )
     for t in types:
         bindings[t.get("id", t["file"] + "::type::" + t["name"])] = t["hash"]
     # Every selected node and discovered related type is conservative evidence for each root.
@@ -107,14 +114,20 @@ def extract(index, selectors, depth=2, max_nodes=16):
             if ident in seen or ident not in selected:
                 continue
             seen.add(ident)
-            todo.extend(c for edge in edges if edge["from"] == ident for c in edge["candidates"])
+            todo.extend(
+                c for edge in edges if edge["from"] == ident for c in edge["candidates"]
+            )
         relevant_types = adapter.related_types([selected[i] for i in seen], index)
         local = {i: bindings[i] for i in sorted(seen)}
         for t in relevant_types:
             local[t.get("id", t["file"] + "::type::" + t["name"])] = t["hash"]
         # Selection/resolution changes are also evidence changes, even with identical source text.
         local["__edges__"] = digest(
-            [{k: v for k, v in e.items() if k != "line"} for e in edges if e["from"] in seen]
+            [
+                {k: v for k, v in e.items() if k != "line"}
+                for e in edges
+                if e["from"] in seen
+            ]
         )
         card_evidence[root["id"]] = digest(local)
         card_files[root["id"]] = sorted(
@@ -143,7 +156,9 @@ def extract(index, selectors, depth=2, max_nodes=16):
         "evidence_hash": bundle,
         "card_evidence": card_evidence,
         "card_files": card_files,
-        "source_files": {p: index["files"][p]["file_hash"] for p in sorted(source_files)},
+        "source_files": {
+            p: index["files"][p]["file_hash"] for p in sorted(source_files)
+        },
         "index_stats": index["stats"],
         "limits": {
             "depth": depth,
@@ -191,7 +206,9 @@ def make_packet(facts, budget):
     packet["presentation"] = {
         "title": facts.get("title", ""),
         "flow": {
-            k: v for k, v in facts.get("flow", {}).items() if k in {"start_label", "end_label"}
+            k: v
+            for k, v in facts.get("flow", {}).items()
+            if k in {"start_label", "end_label"}
         },
     }
     if language == "en":
@@ -211,20 +228,34 @@ def make_packet(facts, budget):
     repo = Path(facts["repository"])
 
     def size():
-        return len(json.dumps(packet, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+        return len(
+            json.dumps(packet, ensure_ascii=False, separators=(",", ":")).encode(
+                "utf-8"
+            )
+        )
 
     seen = set()
-    functions = sorted(facts["functions"], key=lambda f: 0 if f["id"] in facts["root_ids"] else 1)
+    functions = sorted(
+        facts["functions"], key=lambda f: 0 if f["id"] in facts["root_ids"] else 1
+    )
     for f in functions:
         key = f.get("function_id") or f["id"]
         if key in seen:
             continue
         seen.add(key)
-        item = {"id": f["id"], "signature": f["signature"], "source": f.get("source", "")}
+        item = {
+            "id": f["id"],
+            "signature": f["signature"],
+            "source": f.get("source", ""),
+        }
+        item["language"] = f.get("language", facts["language"])
+        if f.get("analysis_limits"):
+            item["analysis_limits"] = f["analysis_limits"]
         if f.get("view") == "business":
             item["label"] = f["name"]
             item["source_refs"] = [
-                {k: s[k] for k in ["file", "line", "end_line", "label"]} for s in f["sources"]
+                {k: s[k] for k in ["file", "line", "end_line", "label"]}
+                for s in f["sources"]
             ]
         packet["functions"].append(item)
         if size() > budget:
@@ -327,7 +358,8 @@ def validate_explanations(value, facts):
             step_location(step, symbol, functions)
         for error in card.get("errors", []):
             if not isinstance(error, dict) or any(
-                not isinstance(error.get(k), str) for k in ["condition", "returns", "handling"]
+                not isinstance(error.get(k), str)
+                for k in ["condition", "returns", "handling"]
             ):
                 raise ValueError("error 需要 condition、returns、handling 文本")
             if error.get("side", "left") not in {"left", "right"}:
@@ -349,7 +381,9 @@ def validate_explanations(value, facts):
                 raise ValueError("分支 kind 必须是 error/degrade")
             if any(not isinstance(branch.get(k, ""), str) for k in ["title", "state"]):
                 raise ValueError("分支标题与状态必须是文本")
-            if branch.get("side", "right" if branch["kind"] == "degrade" else "left") not in {
+            if branch.get(
+                "side", "right" if branch["kind"] == "degrade" else "left"
+            ) not in {
                 "left",
                 "right",
             }:
@@ -358,7 +392,8 @@ def validate_explanations(value, facts):
                 raise ValueError("分支需要 items 数组")
             for item in branch["items"]:
                 if not isinstance(item, dict) or any(
-                    not isinstance(item.get(k), str) for k in ["condition", "returns", "handling"]
+                    not isinstance(item.get(k), str)
+                    for k in ["condition", "returns", "handling"]
                 ):
                     raise ValueError("分支项需要 condition/returns/handling")
         for key in ["notes", "inputs", "outputs"]:
@@ -384,7 +419,9 @@ def validate_explanations(value, facts):
         card = value["cards"].get("business::" + edge["from"])
         if card is None:
             continue  # A blank automatic report can still be rendered.
-        branch = next((b for b in card.get("branches", []) if b["id"] == edge["branch"]), None)
+        branch = next(
+            (b for b in card.get("branches", []) if b["id"] == edge["branch"]), None
+        )
         if branch is None and not card.get("steps"):
             continue
         if branch is None or branch["kind"] != "degrade":

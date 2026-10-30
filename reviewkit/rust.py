@@ -39,6 +39,7 @@ class RustAdapter:
     language = "rust"
     suffixes = (".rs",)
     version = "rust-syntax-10"
+    sample = "fn probe() {}"
 
     def parse(self, text, file):
         from ast_grep_py import SgRoot

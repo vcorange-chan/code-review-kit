@@ -26,7 +26,7 @@ def output(value):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description="离线提取 Rust 函数/业务，生成折叠卡片 HTML；默认不调用模型。"
+        description="离线提取 Rust/Python/Dart 函数或混合语言业务，生成折叠卡片 HTML。"
     )
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("doctor", help="检查本地依赖")
@@ -42,7 +42,7 @@ def main(argv=None):
         if command == "business":
             p.add_argument("--repo", help="覆盖清单仓库路径，供迁移/挂载环境使用")
         p.add_argument("--out", required=True)
-        p.add_argument("--language", default="rust")
+        p.add_argument("--language", default="auto", choices=["auto", *ADAPTERS])
         p.add_argument("--depth", type=int, default=2)
         p.add_argument("--max-nodes", type=int, default=16)
         p.add_argument("--packet-bytes", type=int, default=24000)
@@ -64,7 +64,7 @@ def main(argv=None):
     p.add_argument("--manifest", required=True)
     p.add_argument("--repo")
     p.add_argument("--out", required=True)
-    p.add_argument("--language", default="rust")
+    p.add_argument("--language", default="auto", choices=["auto", *ADAPTERS])
     p.add_argument("--cache", default=str(index_cache(HOME)))
     p = sub.add_parser("packet", help="为已选定节点导出有预算的 AI 证据包")
     p.add_argument("--facts", required=True)
@@ -76,7 +76,7 @@ def main(argv=None):
         command_parser.add_argument(
             "--output-language",
             default="auto",
-            help="auto, zh/中文 or en/English; independent of --language rust",
+            help="auto, zh/中文 or en/English; independent of source --language",
         )
         command_parser.add_argument(
             "--prompt", help="Natural-language request used by automatic output-language selection"
@@ -85,9 +85,13 @@ def main(argv=None):
     started = time.perf_counter()
     try:
         if args.command == "doctor":
-            from ast_grep_py import SgRoot
-
-            SgRoot("fn ok() {}", "rust").root()
+            parsers = {}
+            for name in ADAPTERS:
+                adapter = adapter_for(name)
+                result = adapter.parse(adapter.sample, "probe" + adapter.suffixes[0])
+                if result["parse_error"] or not result["functions"]:
+                    raise ValueError("Parser probe failed: " + name)
+                parsers[name] = "ok"
             output(
                 {
                     "ok": True,
@@ -96,6 +100,7 @@ def main(argv=None):
                     "rg": shutil.which("rg"),
                     "model_api": "未实现；运行完全离线",
                     "languages": list(ADAPTERS),
+                    "parsers": parsers,
                 }
             )
             return 0

@@ -11,6 +11,7 @@ EN = {
     "<h3>错误输出</h3>": "<h3>Error output</h3>",
     '<span class="muted">此侧无已解释分支</span>': '<span class="muted">No explained branch on this side</span>',
     "? 传播点 · ": "? propagation sites · ",
+    "异常处理与传播点 · ": "Exception handling and propagation sites · ",
     "代码位置与源码": "Code locations and source",
     "以下为语法提取；业务阶段和实际执行顺序仍需解释。": "Syntax extraction follows; business stages and execution order still need explanation.",
     "位置": "Location",

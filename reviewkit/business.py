@@ -11,6 +11,8 @@ def anchor(repo, index, ref):
         raise ValueError("source 需要相对 file 路径")
     file = ref["file"].replace("\\", "/")
     path = resolve_source(repo, file)
+    if index["files"].get(file, {}).get("parse_error"):
+        raise ValueError("选定来源存在语法错误，拒绝作为完整证据: " + file)
     lines = path.read_text(encoding="utf-8-sig").splitlines()
     symbol = ref.get("symbol")
     selected = None
@@ -51,7 +53,7 @@ def anchor(repo, index, ref):
         ]
         fn = min(matches, key=lambda f: f["end_line"] - f["line"]) if matches else None
         mode = "legacy_line" if file in index["files"] else "context_range"
-    # Bind the full containing function; non-Rust/context anchors bind their stated range.
+    # Bind the containing function; unindexed context anchors bind their stated range.
     text = (
         fn["source"]
         if fn and "source" in fn
@@ -82,9 +84,9 @@ def anchor(repo, index, ref):
         "end_line": end,
         "label": ref.get("label", "源码"),
         "kind": (
-            index["language"] + "_function"
+            fn.get("language", index["language"]) + "_function"
             if fn
-            else index["language"] + "_type" if selected else "source_context"
+            else selected.get("language", index["language"]) + "_type" if selected else "source_context"
         ),
         "anchor_mode": mode,
         "anchor_id": identity,

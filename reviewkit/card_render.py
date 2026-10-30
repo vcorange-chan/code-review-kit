@@ -135,7 +135,7 @@ class CardRenderer:
             fold(self.t("调用表达式 · ") + str(len(function["calls"])), calls)
             + fold(self.t("分支 · ") + str(len(function["branches"])), branches)
             + fold(
-                self.t("? 传播点 · ") + str(len(function["tries"])),
+                self.t("异常处理与传播点 · ") + str(len(function["tries"])),
                 "".join((pre(x["text"]) + ref(x) for x in function["tries"])),
             )
             + fold(

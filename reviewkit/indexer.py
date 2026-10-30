@@ -21,11 +21,26 @@ def source_files(repo, suffixes):
             "!.deps",
             "-g",
             "!node_modules",
+            "-g",
+            "!.venv",
+            "-g",
+            "!venv",
+            "-g",
+            "!__pycache__",
+            "-g",
+            "!.dart_tool",
+            "-g",
+            "!build",
         ]
         for suffix in suffixes:
             command.extend(["-g", "*" + suffix])
         result = subprocess.run(
-            command, cwd=repo, capture_output=True, text=True, encoding="utf-8", timeout=60
+            command,
+            cwd=repo,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=60,
         )
         if result.returncode not in {0, 1}:
             raise ValueError("rg 文件索引失败: " + result.stderr[:500])
@@ -36,7 +51,18 @@ def source_files(repo, suffixes):
         dirs[:] = [
             d
             for d in dirs
-            if d not in {".git", "target", ".deps", "node_modules", ".venv", "build"}
+            if d
+            not in {
+                ".git",
+                "target",
+                ".deps",
+                "node_modules",
+                ".venv",
+                "venv",
+                "__pycache__",
+                ".dart_tool",
+                "build",
+            }
         ]
         for name in names:
             if Path(name).suffix in suffixes:
@@ -46,7 +72,7 @@ def source_files(repo, suffixes):
 
 def build_index(repo, adapter, cache_root, refresh=False):
     started = time.perf_counter()
-    key = digest(str(repo).encode())[:20]
+    key = digest((str(repo) + "\0" + adapter.language).encode())[:20]
     cache_path = cache_root / (key + ".json")
     previous = read_json(cache_path) if cache_path.exists() and not refresh else {}
     if previous.get("adapter") != adapter.version:
@@ -66,6 +92,10 @@ def build_index(repo, adapter, cache_root, refresh=False):
             text = raw.decode("utf-8-sig").replace("\r\n", "\n")
             files[name] = {"file_hash": file_hash, **adapter.parse(text, name)}
             parsed += 1
+        data = files[name]
+        data.setdefault("language", adapter.language)
+        for item in data["functions"] + data["types"]:
+            item.setdefault("language", data["language"])
     index = {
         "schema_version": 1,
         "repository": str(repo),

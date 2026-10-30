@@ -10,7 +10,7 @@
 - 绿色直线主脉：成功顺序；红色侧分支：错误／中止；金色虚线：降级并回到指定节点。
 - 一个业务节点可关联多个函数及其他语言的源码上下文，不必把业务节点等同于函数。
 - 展开实现后，可按代码块顺序阅读执行者、输入、判断、结果与下一步；跨文件调用写清交接和返回，步骤链接定位到对应代码块。格式检查保证引用不越界，解释是否充分仍需 AI 阅读判断。
-- 当前自动提取 Rust。未知动态分派、未展开宏、图外依赖保留为限制，不冒充完整程序分析或运行证明。
+- 当前自动提取 Rust、Python、Dart，支持混合语言业务卡片。未知动态分派、未展开宏、图外依赖保留为限制，不冒充完整程序分析或运行证明。
 
 ## 安装
 
@@ -28,15 +28,19 @@ code-review doctor
 Pi：
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.6.0
+pi install git:github.com/vcorange-chan/code-review-kit@v0.7.0
 ```
 
 使用 `/skill:code-review-kit`。Cowork：从 GitHub Release 下载 `code-review-kit-skill.zip`，在 Customize → Skills 上传；需要启用代码执行。上传包是自包含的，首次提取时在实际执行环境安装依赖。它不假定可访问宿主机的盘符。详见 [安装说明](skills/code-review-kit/references/install.md)。
 
 ## 指定函数
 
+默认 `--language auto` 按后缀分析 Rust、Python、Dart；显式指定可缩小索引。Python 不导入目标模块，Dart 不需要 Flutter/Dart SDK，均不执行目标代码。Python 可解析的语法版本取决于运行 Kit 的 Python。范围与限制见 [语言说明](docs/languages.md)。
+
 ```sh
 code-review function --repo /path/to/repository --symbol some_function --file src/lib.rs --out ./review
+code-review function --repo /path/to/repository --language python --symbol run --file service.py --out ./review-python
+code-review function --repo /path/to/repository --language dart --symbol Worker.run --file lib/worker.dart --out ./review-dart
 ```
 
 打开 `review/index.html`。重名时要求补充文件或完整符号。默认向下追踪 2 层、最多 16 个节点，可调整 `--depth` 和 `--max-nodes`。
@@ -51,12 +55,19 @@ code-review business --manifest examples/document-pipeline/business.json --expla
 
 公开示例是一个可移植的合成文档流程：14 个阶段，包含 5 个降级返回。它不是来自私有项目的源码快照。清单可使用 `--repo` 覆盖路径，适合另一台机器或 Cowork 挂载目录。
 
-节点关联多个 `sources`；Rust 来源推荐 `{"file":"src/lib.rs","symbol":"accept"}`，行号会随索引更新。`success` 边连接直线主脉，`resume` 边指定某个降级分支回到哪个节点的 input/output。格式见 [流程说明](skills/code-review-kit/references/flow-format.md)。没有解释时仍可生成基础卡片，未知含义明确标注。
+节点关联多个 `sources`；Rust/Python/Dart 来源推荐 `{"file":"src/lib.rs","symbol":"accept"}`，行号会随索引更新。`success` 边连接直线主脉，`resume` 边指定某个降级分支回到哪个节点的 input/output。格式见 [流程说明](skills/code-review-kit/references/flow-format.md)。没有解释时仍可生成基础卡片，未知含义明确标注。
 
 旧行号清单可以显式迁移，原解释不会自动换绑：
 
 ```sh
 code-review pin-sources --manifest old-flow.json --repo /path/to/repository --out pinned-flow.json
+```
+
+混合示例将 Dart 输入、Python 转换与 Rust 大小检查连接起来，包含降级返回。跨语言交接由清单声明；该示例没有实现实际 FFI/RPC 桥。
+
+```sh
+code-review business --manifest examples/document-pipeline/mixed-business.json --language auto --explanations examples/document-pipeline/mixed-explanations.zh.json --out out/mixed --depth 0
+code-review business --manifest examples/document-pipeline/mixed-business.json --language auto --explanations examples/document-pipeline/mixed-explanations.en.json --output-language en --out out/mixed-en --depth 0
 ```
 
 ## AI 只补解释，不重写页面
@@ -89,7 +100,7 @@ code-review function --repo /path/to/repository --symbol run --out review --prom
 code-review function --repo /path/to/repository --symbol run --out review --prompt "审阅 run"
 ```
 
-`--output-language` 支持 `auto`（默认）、`zh`/`中文`、`en`/`English`，与源码分析选项 `--language rust` 无关。`function`、`business`、`render`、`packet` 共用这套规则；切换语言会重新生成 HTML，继续复用源码索引与证据。
+`--output-language` 支持 `auto`（默认）、`zh`/`中文`、`en`/`English`，与源码分析选项 `--language auto|rust|python|dart` 无关。`function`、`business`、`render`、`packet` 共用这套规则；切换语言会重新生成 HTML，继续复用源码索引与证据。
 
 界面、状态、按钮及证据包指引使用目标语言；源码、符号和路径保留原文。业务解释由调用工具的 AI 按目标语言填写，工具不会联网翻译。解释 JSON 用 `output_language` 标记语言（旧文件视为中文），可用顶层 `title` 和 `flow.start_label/end_label` 提供对应语言的报告标题与起止标签。已有解释语言不符时，页面明确提示待翻译，保持原文文件，生成目标语言的 seed；AI 只补充缺少的语言版本，保留证据摘要，再运行 `render`。不会把中文解释直接放进英文界面冒充英文结果。
 
@@ -129,9 +140,9 @@ python scripts/prepare_release.py --out dist/release --verify
 
 ## 边界与开发
 
-解析为有范围限制的语法候选分析，宏、trait/泛型、运行时路由和条件编译未做完整求解。对象方法会显示候选或未解析原因；直接参数类型注解只用于保守寻找候选，不等于类型检查。非 Rust 引用作为上下文保留，不代表支持其自动调用分析。模型解释也不因摘要匹配就自动正确。
+解析为有范围限制的语法候选分析，宏、trait/泛型、运行时路由和条件编译未做完整求解。对象方法会显示候选或未解析原因；直接参数类型注解只用于保守寻找候选，不等于类型检查。其他未支持语言的引用作为上下文保留，不代表支持其自动调用分析。模型解释也不因摘要匹配就自动正确。
 
-`reviewkit/languages.py` 定义适配器契约，目前只注册 Rust。未来 Dart、Zig、C、Go 在适配器内实现语法规则，复用业务、解释、链接和模板。模块边界见 [架构说明](docs/architecture.md)。
+`reviewkit/languages.py` 定义适配器契约，目前注册 Rust、Python、Dart。未来 Zig、C、Go 在适配器内实现语法规则，复用业务、解释、链接和模板。模块边界见 [架构说明](docs/architecture.md)。
 
 0.3 改进了证据摘要规则，旧版本解释可能需要一次复核，工具不会自动隐藏该提示。七项外部 review 的核实结果与验证方式见 [改进记录](docs/review-findings.md)。
 

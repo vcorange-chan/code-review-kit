@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "output_language": "zh",
+  "evidence_hash": "5d3e7e527c6a5cf4b938f72549ffc24473361b9db89ca864f963b27f0aadb7c4",
+  "cards": {
+    "business::prepare": {
+      "evidence_hash": "4c972ca44858e434224f41ce893a403c197eb7e0fd92b638b06597202bc76430",
+      "title": "Dart：整理请求文字",
+      "input": "原始 String，例如 \"  hello  \"。",
+      "steps": [
+        {
+          "title": "去掉首尾空白",
+          "actor": "business::prepare",
+          "detail": "prepareRequest 接收 value，通过 trim 得到 trimmed；原始字符串不修改。",
+          "result": "trimmed，例如 hello",
+          "next": "检查 trimmed.isEmpty",
+          "reference": "business::prepare"
+        },
+        {
+          "title": "分支判断与返回",
+          "actor": "business::prepare",
+          "detail": "trimmed 为空时抛出 ArgumentError；否则返回 trimmed。",
+          "result": "非空文字，或 ArgumentError",
+          "next": "成功后由业务清单交给 Python 卡片",
+          "reference": "business::prepare"
+        }
+      ],
+      "normal_output": "非空 String。示例 \"  hello  \" 得到 \"hello\"。",
+      "errors": [
+        {
+          "condition": "trimmed.isEmpty 为 true",
+          "returns": "throw ArgumentError('empty request')",
+          "handling": "中止当前函数；不进入清单的后续成功节点。"
+        }
+      ],
+      "notes": [
+        "这些跨语言交接由清单人为声明；示例没有实现实际 FFI/RPC 桥。仅解释显式分支，不穷举隐式异常。"
+      ],
+      "references": [
+        "business::prepare"
+      ]
+    },
+    "business::normalize": {
+      "evidence_hash": "ac63470f16b12858506585457948f0154ebf365cf58ad1b875706af434ea48ab",
+      "title": "Python：尝试 ASCII 往返转换",
+      "input": "上一步的文字，例如 hello 或 猫。",
+      "steps": [
+        {
+          "title": "拒绝空值",
+          "actor": "business::normalize",
+          "detail": "if not value 为 true 时抛出 ValueError；否则进入 try。",
+          "result": "非空输入，或 ValueError",
+          "next": "尝试 ASCII 编码再解码",
+          "reference": "business::normalize"
+        },
+        {
+          "title": "正常转换或保留原文",
+          "actor": "business::normalize",
+          "detail": "encode(\"ascii\") 后 decode(\"ascii\") 成功就返回转换后的 str；任一步抛出 UnicodeError 时，except 返回原 value。",
+          "result": "hello 原样返回；猫触发降级，仍返回猫",
+          "next": "两条返回路径均到本节点的正常输出，再进入 Rust 卡片",
+          "reference": "business::normalize"
+        }
+      ],
+      "normal_output": "str；ASCII 路径返回转换结果，UnicodeError 降级路径保留原文。",
+      "errors": [
+        {
+          "condition": "not value 为 true",
+          "returns": "raise ValueError(\"empty document\")",
+          "handling": "退出函数；不执行编码和后续成功节点。"
+        }
+      ],
+      "notes": [
+        "这些跨语言交接由清单人为声明；示例没有实现实际 FFI/RPC 桥。仅解释显式分支，不穷举隐式异常。"
+      ],
+      "references": [
+        "business::normalize"
+      ],
+      "branches": [
+        {
+          "id": "keep_raw",
+          "kind": "degrade",
+          "title": "保留原文",
+          "items": [
+            {
+              "condition": "ASCII 编码或解码抛出 UnicodeError",
+              "returns": "原 value",
+              "handling": "回到本节点正常输出，继续 Rust 大小检查"
+            }
+          ]
+        }
+      ]
+    },
+    "business::commit": {
+      "evidence_hash": "1e6523506893cf89564e4aa4b0186b1c6de099af2322a071280e0881ee0a085c",
+      "title": "Rust：检查 UTF-8 字节数",
+      "input": "文字以 &str 交给 commit；hello 是 5 字节，猫是 3 字节。",
+      "steps": [
+        {
+          "title": "检查大小上限",
+          "actor": "business::commit",
+          "detail": "value.len() 取得 UTF-8 字节数。大于 4096 时立即返回 Err；否则继续。",
+          "result": "允许提交的长度，或 Err",
+          "next": "成功分支返回长度",
+          "reference": "business::commit"
+        },
+        {
+          "title": "返回字节数",
+          "actor": "business::commit",
+          "detail": "返回 Ok(value.len())。这是字节数，不是字符数。",
+          "result": "Ok(usize)",
+          "next": "业务流程完成",
+          "reference": "business::commit"
+        }
+      ],
+      "normal_output": "Ok(usize)：hello → Ok(5)，猫 → Ok(3)。",
+      "errors": [
+        {
+          "condition": "value.len() > 4096",
+          "returns": "Err(\"document too large\")",
+          "handling": "立即返回；不产生成功长度。"
+        }
+      ],
+      "notes": [
+        "这些跨语言交接由清单人为声明；示例没有实现实际 FFI/RPC 桥。仅解释显式分支，不穷举隐式异常。"
+      ],
+      "references": [
+        "business::commit"
+      ]
+    }
+  },
+  "title": "虚构文档请求 · Dart / Python / Rust",
+  "flow": {
+    "start_label": "输入文字",
+    "end_label": "获得字节数"
+  }
+}

@@ -1,5 +1,12 @@
 # Changes
 
+## 0.7.0
+
+- Add Python AST and Dart ast-grep adapters with function/method entries, branches, explicit error/return facts and conservative call hints; no new runtime dependency or target-code execution.
+- Default source language to auto, supporting explicit mixed Rust/Python/Dart business sources while keeping call candidates within the caller's language.
+- Isolate single/mixed language caches, preserve language and limits in bounded evidence packets, and retain independent card staleness.
+- Add bilingual fictional mixed-language examples and exercise all three languages from the packaged Pi/Cowork core.
+
 ## 0.6.0
 
 - Keep public examples fictional and replace project-specific ignore entries with generic private-example exclusion.

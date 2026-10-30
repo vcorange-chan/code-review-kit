@@ -10,7 +10,7 @@ Turn source evidence and business explanations into collapsible, traceable HTML 
 - A straight green spine shows success order; red side branches show errors/stops; gold dashed lines show fallbacks returning to a specified node.
 - A business node can reference multiple functions and source context in other languages. It does not have to correspond to one function.
 - Expand implementation to follow code blocks in order: actor, input, condition, result and next destination. Cross-file calls explain handoffs and return points; step links target the relevant code blocks. Structural checks prevent out-of-range references; whether the narrative is sufficient still requires AI source review.
-- Automatic extraction currently supports Rust. Unknown dynamic dispatch, unexpanded macros and dependencies outside the graph remain explicit limitations, not claims of complete program analysis or runtime proof.
+- Automatic extraction supports Rust, Python and Dart, including mixed-language business cards. Unknown dynamic dispatch, unexpanded macros and dependencies outside the graph remain explicit limitations, not claims of complete program analysis or runtime proof.
 
 ## Installation
 
@@ -28,15 +28,19 @@ For a standalone installation, run `install.ps1` on Windows, or `python skills/c
 Pi:
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.6.0
+pi install git:github.com/vcorange-chan/code-review-kit@v0.7.0
 ```
 
 Use `/skill:code-review-kit`. For Cowork, download `code-review-kit-skill.zip` from GitHub Releases and upload it under Customize → Skills; code execution must be enabled. The uploaded package is self-contained and installs dependencies in its actual execution environment on first extraction. It does not assume access to the host machine's drive paths. See [installation notes](skills/code-review-kit/references/install.md).
 
 ## Select a function
 
+Default `--language auto` analyzes Rust, Python and Dart by suffix; an explicit language narrows indexing. Python does not import target modules, Dart needs no Flutter/Dart SDK, and neither executes target code. Accepted Python syntax depends on the interpreter running the Kit. See [source languages](docs/languages.md) for coverage and limitations.
+
 ```sh
 code-review function --repo /path/to/repository --symbol some_function --file src/lib.rs --out ./review
+code-review function --repo /path/to/repository --language python --symbol run --file service.py --out ./review-python
+code-review function --repo /path/to/repository --language dart --symbol Worker.run --file lib/worker.dart --out ./review-dart
 ```
 
 Open `review/index.html`. Ambiguous names require a file or a fully qualified symbol. By default, traversal follows two downstream levels and at most 16 nodes; adjust `--depth` and `--max-nodes` as needed.
@@ -51,12 +55,19 @@ code-review business --manifest examples/document-pipeline/business.json --expla
 
 The public example is a portable, synthetic document workflow: 14 stages with five fallback returns. It is not a source snapshot from a private project. Override the manifest's repository with `--repo` for another machine or a directory mounted in Cowork.
 
-Nodes reference multiple `sources`. For Rust, prefer `{"file":"src/lib.rs","symbol":"accept"}` so the index supplies current lines. `success` edges connect the straight spine; `resume` edges specify which node's input/output receives a fallback return. See [the flow format](skills/code-review-kit/references/flow-format.md). Basic cards can be generated without explanations, with unknown meaning clearly marked.
+Nodes reference multiple `sources`. For Rust/Python/Dart, prefer `{"file":"src/lib.rs","symbol":"accept"}` so the index supplies current lines. `success` edges connect the straight spine; `resume` edges specify which node's input/output receives a fallback return. See [the flow format](skills/code-review-kit/references/flow-format.md). Basic cards can be generated without explanations, with unknown meaning clearly marked.
 
 Legacy line-based manifests can be migrated explicitly; old explanations are not automatically rebound:
 
 ```sh
 code-review pin-sources --manifest old-flow.json --repo /path/to/repository --out pinned-flow.json
+```
+
+The mixed example connects Dart input, Python conversion and a Rust size gate, including fallback recovery. Cross-language handoffs are manifest declarations; this fixture implements no actual FFI/RPC bridge.
+
+```sh
+code-review business --manifest examples/document-pipeline/mixed-business.json --language auto --explanations examples/document-pipeline/mixed-explanations.zh.json --out out/mixed --depth 0
+code-review business --manifest examples/document-pipeline/mixed-business.json --language auto --explanations examples/document-pipeline/mixed-explanations.en.json --output-language en --out out/mixed-en --depth 0
 ```
 
 ## AI supplies explanations, not page code
@@ -89,7 +100,7 @@ code-review function --repo /path/to/repository --symbol run --out review --prom
 code-review function --repo /path/to/repository --symbol run --out review --prompt "审阅 run"
 ```
 
-`--output-language` accepts `auto` (default), `zh`/`中文`, and `en`/`English`. It is independent of the source-analysis option `--language rust`. The `function`, `business`, `render` and `packet` commands share these rules. Switching languages rebuilds HTML while reusing the source index and evidence.
+`--output-language` accepts `auto` (default), `zh`/`中文`, and `en`/`English`. It is independent of the source-analysis option `--language auto|rust|python|dart`. The `function`, `business`, `render` and `packet` commands share these rules. Switching languages rebuilds HTML while reusing the source index and evidence.
 
 UI labels, states, buttons and evidence-packet guidance use the target language. Source code, symbols and paths remain unchanged. The AI calling the tool writes business explanations in that language; the tool does not translate through a network service. Explanation JSON declares `output_language` (legacy files are treated as Chinese). Top-level `title` and `flow.start_label/end_label` can supply localized report and terminal labels. When existing explanations use another language, the report explicitly requests translation, preserves the original file and generates a seed in the target language. AI fills only the missing language version, preserves evidence hashes and runs `render`. Chinese explanations are not presented as English content inside an English UI.
 
@@ -129,9 +140,9 @@ Publishers configure a JSON array of private terms in ignored `.local/privacy-de
 
 ## Limitations and development
 
-Analysis produces a bounded graph of syntax candidates. Macros, traits/generics, runtime routing and conditional compilation are not fully resolved. Object methods show candidates or unresolved reasons. Direct parameter type annotations are conservative hints, not type checking. Non-Rust references are context, not automatic call-analysis support. Hash matches do not prove model explanations correct.
+Analysis produces a bounded graph of syntax candidates. Macros, traits/generics, runtime routing and conditional compilation are not fully resolved. Object methods show candidates or unresolved reasons. Direct parameter type annotations are conservative hints, not type checking. References in other unsupported languages are context, not automatic call-analysis support. Hash matches do not prove model explanations correct.
 
-`reviewkit/languages.py` defines the adapter contract; only Rust is registered. Future Dart, Zig, C and Go implementations belong in adapters and reuse business views, explanations, links and the template. See [architecture](docs/architecture.md) for module boundaries.
+`reviewkit/languages.py` defines the adapter contract; Rust, Python and Dart are registered. Future Zig, C and Go implementations belong in adapters and reuse business views, explanations, links and the template. See [architecture](docs/architecture.md) for module boundaries.
 
 Version 0.3 changed the evidence hashing rules. Older explanations may need one review; the tool does not silently hide that status. The seven external review findings and their verification are recorded in [the follow-up](docs/review-findings.md).
 

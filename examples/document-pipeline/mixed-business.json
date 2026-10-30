@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "repository": ".",
+  "title": "虚构文档请求 · Dart / Python / Rust",
+  "start_label": "输入文档文字",
+  "end_label": "获得 UTF-8 字节数",
+  "nodes": [
+    {"id": "prepare", "sources": [{"file": "polyglot/client.dart", "symbol": "prepareRequest"}]},
+    {"id": "normalize", "sources": [{"file": "polyglot/service.py", "symbol": "normalize_document"}]},
+    {"id": "commit", "sources": [{"file": "polyglot/core.rs", "symbol": "commit"}]}
+  ],
+  "edges": [
+    {"from": "prepare", "to": "normalize", "kind": "success"},
+    {"from": "normalize", "to": "commit", "kind": "success"},
+    {"from": "normalize", "to": "normalize", "kind": "resume", "branch": "keep_raw", "port": "output"}
+  ]
+}
