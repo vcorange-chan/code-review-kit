@@ -18,7 +18,7 @@ python -m pip install .
 code-review doctor
 ```
 
-也可使用独立目录安装：Windows 运行 `install.ps1`，或在任意平台运行 `python skills/code-review-kit/scripts/setup.py`，随后使用 `python review.py`。`rg` 可加速文件枚举，未安装时使用 Python 遍历。
+也可使用独立目录安装：Windows 运行 `install.ps1`，或在任意平台运行 `python skills/code-review-kit/scripts/setup.py`，随后使用 `python review.py`。依赖和索引可保存在安装目录外的可写临时状态目录，支持只读 Skill 挂载；设置 `CODE_REVIEW_KIT_STATE` 可选择持久目录。`rg` 可加速文件枚举，未安装时使用 Python 遍历。
 
 Pi：
 

@@ -12,6 +12,7 @@ from .engine import extract, make_packet, blank_explanations, validate_explanati
 from .render import render
 from .business import extract_business
 from .build_cache import build_key,can_reuse
+from .runtime import index_cache
 
 HOME=Path(__file__).resolve().parent.parent
 
@@ -40,7 +41,7 @@ def main(argv=None):
         p.add_argument('--max-nodes',type=int,default=16)
         p.add_argument('--packet-bytes',type=int,default=24000)
         p.add_argument('--explanations')
-        p.add_argument('--cache',default=str(HOME/'.cache'))
+        p.add_argument('--cache',default=str(index_cache(HOME)))
         p.add_argument('--refresh',action='store_true')
     p=sub.add_parser('render',help='只用事实与解释重新生成 HTML')
     p.add_argument('--facts',required=True);p.add_argument('--explanations',required=True);p.add_argument('--html',required=True);p.add_argument('--title')

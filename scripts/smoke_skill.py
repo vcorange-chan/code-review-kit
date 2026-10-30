@@ -13,8 +13,9 @@ with tempfile.TemporaryDirectory() as temp:
     with zipfile.ZipFile(ROOT/'dist/code-review-kit-skill.zip') as archive:
         archive.extractall(folder)
     skill=folder/'code-review-kit'
+    state=folder/'writable-state'
     def run(*args):
-        result=subprocess.run([sys.executable,*map(str,args)],cwd=skill,text=True,capture_output=True,encoding='utf-8',env={**os.environ,'PYTHONUTF8':'1'})
+        result=subprocess.run([sys.executable,*map(str,args)],cwd=skill,text=True,capture_output=True,encoding='utf-8',env={**os.environ,'PYTHONUTF8':'1','CODE_REVIEW_KIT_STATE':str(state)})
         if result.returncode:raise RuntimeError(result.stderr+'\n'+result.stdout)
         return result.stdout
     run(skill/'scripts/setup.py')
@@ -25,4 +26,5 @@ with tempfile.TemporaryDirectory() as temp:
         '--explanations',ROOT/'examples/document-pipeline/explanations.json','--depth','0','--max-nodes','64','--out',output,
         '--cache',folder/'cache'))
     assert doctor['ok'] and report['cards']==14 and report['explained']==14 and not report['stale_cards']
-    print(json.dumps({'zip_executed':True,'cards':14,'stale_cards':report['stale_cards'],'native_platform_install':True}))
+    assert state.is_dir() and not (skill/'scripts/tool/.deps').exists()
+    print(json.dumps({'zip_executed':True,'cards':14,'stale_cards':report['stale_cards'],'native_platform_install':True,'dependency_state_outside_skill':True}))
