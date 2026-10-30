@@ -1,5 +1,12 @@
 # Changes
 
+## 0.6.0
+
+- Keep public examples fictional and replace project-specific ignore entries with generic private-example exclusion.
+- Add one offline source/archive/privacy checker with approved hashes, private-term configuration, safe diagnostics and evidence-derived public demos.
+- Gate Skill ZIPs, Python wheel/sdist builds, Git pushes and CI publication artifacts; recheck actual files immediately before release upload.
+- Preserve private reviews locally; no automatic upload or model API is added.
+
 ## 0.5.0
 
 - Explain code blocks in execution order with actors, input, conditions, results and next destinations; clarify cross-file calls and return points in the shared AI/Skill contract.

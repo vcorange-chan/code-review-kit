@@ -1,6 +1,6 @@
 # Install and move between environments
 
-Pi: install the Git repository as a Pi package (`pi install git:github.com/vcorange-chan/code-review-kit@v0.5.0`). It discovers `skills/code-review-kit`; no TypeScript extension or model API is needed. Use `/skill:code-review-kit` to invoke explicitly.
+Pi: install the Git repository as a Pi package (`pi install git:github.com/vcorange-chan/code-review-kit@v0.6.0`). It discovers `skills/code-review-kit`; no TypeScript extension or model API is needed. Use `/skill:code-review-kit` to invoke explicitly.
 
 Cowork: upload the release's `code-review-kit-skill.zip` in Customize → Skills → Upload a skill, with code execution enabled. The ZIP contains the complete skill and Python tool. Supply repository files in a folder accessible to Cowork's execution environment. Run setup there once if extracting source. Host paths such as a Windows drive letter are not portable; override the business manifest with `--repo` pointing to the visible folder. Default report links navigate embedded source snapshots; external/editor links require explicit configuration.
 

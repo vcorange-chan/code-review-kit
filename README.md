@@ -28,7 +28,7 @@ code-review doctor
 Pi：
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.5.0
+pi install git:github.com/vcorange-chan/code-review-kit@v0.6.0
 ```
 
 使用 `/skill:code-review-kit`。Cowork：从 GitHub Release 下载 `code-review-kit-skill.zip`，在 Customize → Skills 上传；需要启用代码执行。上传包是自包含的，首次提取时在实际执行环境安装依赖。它不假定可访问宿主机的盘符。详见 [安装说明](skills/code-review-kit/references/install.md)。
@@ -113,6 +113,19 @@ code-review function --repo /path/to/repository --symbol run --out review --link
 `relative` 需要随报告保留源码目录结构；`local` 显式生成本机文件链接。模板支持 `{path}`、`{absolute_path}`、`{line}`、`{end_line}`，其中 absolute_path 是带前导斜杠的 URI 路径。默认内嵌模式提供行号定位；普通文件链接不承诺浏览器按行跳转。
 
 源码、解释、清单和模板均未变时直接复用 HTML，不把完整报告再交给模型。其他时候按文件摘要复用语法索引。源码只读；默认不执行目标项目，不创建运行实验。
+
+## 发布前的隐私检查
+
+公开示例只使用虚构项目；真实项目清单、源码快照、解释和 Review 保存在忽略的本地目录。发布检查核对允许文件及其摘要，扫描本机路径、已配置的私有名称和 Review 数据，并逐项验证 ZIP/wheel。公开演示 HTML 必须由已审核的合成输入重建并逐字节匹配；重命名私人报告不能绕过检查。
+
+```sh
+python scripts/check_release.py source
+git config --local core.hooksPath .githooks
+python scripts/prepare_release.py --out dist/release
+python scripts/prepare_release.py --out dist/release --verify
+```
+
+发布者在忽略的 `.local/privacy-denylist.json` 或本机 `REVIEW_KIT_PRIVATE_TERMS` 环境变量中配置私有名称的 JSON 数组；真实名称不上传 CI，也不写进公开文件。CI 使用空的名称基线，执行通用路径、摘要和发布包检查；本机推送/发布检查额外拦截私有名称。发布流程要求配置存在，检查失败立即停止，终端只显示规则与编号；详细报告可用 `--report .local/privacy-report.json` 保存在本地。源码和图片需要先审核，再更新 `.release-policy.json` 摘要。自动检查不能识别所有隐私含义；旧提交及已下载副本也不会因此被撤回。详见 [发布隐私说明](docs/release-privacy.md)。
 
 ## 边界与开发
 

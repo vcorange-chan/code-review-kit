@@ -28,7 +28,7 @@ For a standalone installation, run `install.ps1` on Windows, or `python skills/c
 Pi:
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.5.0
+pi install git:github.com/vcorange-chan/code-review-kit@v0.6.0
 ```
 
 Use `/skill:code-review-kit`. For Cowork, download `code-review-kit-skill.zip` from GitHub Releases and upload it under Customize → Skills; code execution must be enabled. The uploaded package is self-contained and installs dependencies in its actual execution environment on first extraction. It does not assume access to the host machine's drive paths. See [installation notes](skills/code-review-kit/references/install.md).
@@ -113,6 +113,19 @@ code-review function --repo /path/to/repository --symbol run --out review --link
 `relative` requires retaining the source directory structure alongside the report; `local` explicitly generates local file links. Templates support `{path}`, `{absolute_path}`, `{line}` and `{end_line}`; absolute_path is a URI path with a leading slash. Default embedded links navigate to actual line targets. Ordinary file links do not promise browser line navigation.
 
 When source, explanations, manifest and template are unchanged, HTML is reused directly instead of sending the complete report back to a model. Otherwise, the syntax index is reused by file hash. Source is read-only; the tool does not execute the target project or create runtime experiments by default.
+
+## Pre-release privacy checks
+
+Public examples use fictional projects only. Real manifests, source snapshots, explanations and Reviews stay in ignored local directories. Publication checks validate allowed files and their hashes, scan for host paths, configured private terms and Review data, and verify every ZIP/wheel entry. Public demo HTML must be rebuilt from reviewed synthetic inputs and match byte for byte; renaming a private report does not bypass the check.
+
+```sh
+python scripts/check_release.py source
+git config --local core.hooksPath .githooks
+python scripts/prepare_release.py --out dist/release
+python scripts/prepare_release.py --out dist/release --verify
+```
+
+Publishers configure a JSON array of private terms in ignored `.local/privacy-denylist.json` or the local `REVIEW_KIT_PRIVATE_TERMS` environment variable. Real terms are not sent to CI or written into tracked files. CI uses an empty term baseline and checks generic paths, hashes and packages; local push/publish gates additionally block private names. Publishing requires this configuration. Failures stop the operation and print only a rule and identifier; use `--report .local/privacy-report.json` for local details. Review source and images before updating `.release-policy.json` hashes. Automated checks cannot recognize every privacy implication; old commits and downloaded copies are not retracted. See [release privacy](docs/release-privacy.md).
 
 ## Limitations and development
 
