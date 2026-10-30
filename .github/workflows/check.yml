@@ -56,4 +56,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: public-demo-preview
-          path: out/preview/review-example.png
+          path: out/preview/*.png
