@@ -134,13 +134,22 @@ def extract(index, selectors, depth=2, max_nodes=16):
             {selected[i]["file"] for i in seen} | {t["file"] for t in relevant_types}
         )
     source_files = {f["file"] for f in selected.values()} | {t["file"] for t in types}
-    for f in selected.values():
-        lines = (
-            resolve_source(Path(index["repository"]), f["file"])
-            .read_text(encoding="utf-8-sig")
-            .splitlines()
-        )
-        f["source"] = "\n".join(lines[f["line"] - 1 : f["end_line"]])
+    # A type's text may be a compact declaration shape. Source navigation needs
+    # separate, contiguous original text with the original starting line.
+    source_lines = {}
+    for item in [*selected.values(), *types]:
+        file = item["file"]
+        if file not in source_lines:
+            source_lines[file] = (
+                resolve_source(Path(index["repository"]), file)
+                .read_text(encoding="utf-8-sig")
+                .splitlines()
+            )
+        lines = source_lines[file]
+        first, last = item["line"], item["end_line"]
+        if not 1 <= first <= last <= len(lines):
+            raise ValueError("Invalid source snapshot range: " + file)
+        item["source"] = "\n".join(lines[first - 1 : last])
     facts = {
         "schema_version": 1,
         "language": index["language"],
@@ -262,7 +271,8 @@ def make_packet(facts, budget):
             packet["functions"].pop()
             packet["omitted"].append(f["id"])
     for t in facts["types"]:
-        packet["types"].append(t)
+        # Full type source is for navigation, not the bounded model packet.
+        packet["types"].append({k: v for k, v in t.items() if k != "source"})
         if size() > budget:
             packet["types"].pop()
             packet["omitted"].append(t["name"])

@@ -13,7 +13,9 @@ from .i18n import Translator
 
 class SourceLinks:
 
-    def __init__(self, facts, output, mode="embedded", template=None, output_language="zh"):
+    def __init__(
+        self, facts, output, mode="embedded", template=None, output_language="zh"
+    ):
         self.t = Translator(output_language)
         self.repo = Path(facts["repository"])
         self.output = Path(output)
@@ -45,11 +47,16 @@ class SourceLinks:
             for source in item.get("sources", []):
                 self.add(source["file"], source["line"], source.get("snippet", ""))
         for item in facts["types"]:
-            self.add(item["file"], item["line"], item.get("text", ""))
+            # Legacy facts may only have a summary in text. Do not invent
+            # original line mappings or reread a possibly changed live file.
+            self.add(item["file"], item["line"], item.get("source", ""))
 
     def add(self, file, first_line, source):
         for offset, text in enumerate(source.splitlines()):
-            self.lines[file][first_line + offset] = text
+            number = first_line + offset
+            if number in self.lines[file] and self.lines[file][number] != text:
+                raise ValueError(f"Conflicting source snapshots: {file}:{number}")
+            self.lines[file][number] = text
 
     @staticmethod
     def target(file, line):
@@ -58,7 +65,9 @@ class SourceLinks:
 
     def reference(self, file, line, end_line=None):
         end_line = end_line or line
-        label = file + ":" + str(line) + ("–" + str(end_line) if end_line != line else "")
+        label = (
+            file + ":" + str(line) + ("–" + str(end_line) if end_line != line else "")
+        )
         copy_text = file + ":" + str(line)
         marker = ""
         if self.mode == "embedded":
@@ -87,7 +96,8 @@ class SourceLinks:
             values = {
                 "path": quote(file, safe="/"),
                 "absolute_path": quote(
-                    "/" + resolve_source(self.repo, file).as_posix().lstrip("/"), safe="/:"
+                    "/" + resolve_source(self.repo, file).as_posix().lstrip("/"),
+                    safe="/:",
                 ),
                 "line": line,
                 "end_line": end_line,
@@ -128,7 +138,9 @@ class SourceLinks:
                     + "</code></span>"
                 )
                 previous = number
-            files.append(fold(file, '<pre class="source-lines">' + "".join(rows) + "</pre>"))
+            files.append(
+                fold(file, '<pre class="source-lines">' + "".join(rows) + "</pre>")
+            )
         return (
             self.t(
                 '<section id="source-view" class="inventory" hidden><h2>源码快照</h2><button id="source-back">返回流程</button>'
