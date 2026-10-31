@@ -1,6 +1,6 @@
 {
   "name": "code-review-kit",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "license": "MIT",
   "description": "Reusable source and business-flow review cards with offline extraction",
   "keywords": ["pi-package", "agent-skills", "code-review"],

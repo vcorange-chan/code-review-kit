@@ -1,5 +1,12 @@
 # Changes
 
+## 0.7.1
+
+- Keep compact type summaries separate from verbatim source snapshots for all languages; reject conflicting original lines and preserve missing-source notices for legacy facts.
+- Exclude full type source from bounded AI packets, preserving compact evidence and existing staleness rules.
+- Share one repository-local ignore policy between rg and Python enumeration, including nested ignore files and consistent generated/private directory exclusions; use pinned pure-Python pathspec.
+- Add regressions for source-line fidelity, legacy snapshots, independent evidence, ignore negation/precedence and both enumeration providers.
+
 ## 0.7.0
 
 - Add Python AST and Dart ast-grep adapters with function/method entries, branches, explicit error/return facts and conservative call hints; no new runtime dependency or target-code execution.
