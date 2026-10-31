@@ -16,6 +16,8 @@ Turn source evidence and business explanations into collapsible, traceable HTML 
 
 Python 3.11+; Windows, macOS and Linux. Native parser dependencies install for the execution environment and are not bundled in the Skill.
 
+File selection uses pinned pure-Python pathspec. With or without rg, the same repository-local ignore rules apply and generated/private-state directories are excluded; parent/global configuration outside the repository is not inherited. See [architecture](docs/architecture.md) for the policy.
+
 ```sh
 git clone https://github.com/vcorange-chan/code-review-kit.git
 cd code-review-kit

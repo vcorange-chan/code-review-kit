@@ -85,6 +85,10 @@ def main(argv=None):
     started = time.perf_counter()
     try:
         if args.command == "doctor":
+            from pathspec import GitIgnoreSpec
+
+            if not GitIgnoreSpec.from_lines(["*.tmp"], backend="simple").match_file("probe.tmp"):
+                raise ValueError("Ignore policy probe failed")
             parsers = {}
             for name in ADAPTERS:
                 adapter = adapter_for(name)
@@ -97,6 +101,7 @@ def main(argv=None):
                     "ok": True,
                     "python": sys.version.split()[0],
                     "ast_grep_py": importlib.metadata.version("ast-grep-py"),
+                    "pathspec": importlib.metadata.version("pathspec"),
                     "rg": shutil.which("rg"),
                     "model_api": "未实现；运行完全离线",
                     "languages": list(ADAPTERS),

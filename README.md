@@ -16,6 +16,8 @@
 
 Python 3.11+；支持 Windows、macOS、Linux。原生解析依赖按执行环境安装，不随 Skill 打包。
 
+文件选择使用固定版本的纯 Python pathspec。无论有无 rg，都应用同一套仓库内忽略规则，并排除生成目录与本地私有状态；不继承仓库外父级或全局配置。具体规则见 [架构说明](docs/architecture.md)。
+
 ```sh
 git clone https://github.com/vcorange-chan/code-review-kit.git
 cd code-review-kit

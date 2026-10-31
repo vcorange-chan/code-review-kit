@@ -4,34 +4,18 @@ import shutil
 import subprocess
 import time
 from .storage import digest, read_json, write_json, resolve_source
+from .file_selection import EXCLUDED_DIRS, FileSelection
 
 
 def source_files(repo, suffixes):
+    repo = Path(repo).resolve()
+    policy = FileSelection(repo, suffixes)
     rg = shutil.which("rg")
     if rg:
-        command = [
-            rg,
-            "--files",
-            "--hidden",
-            "-g",
-            "!.git",
-            "-g",
-            "!target",
-            "-g",
-            "!.deps",
-            "-g",
-            "!node_modules",
-            "-g",
-            "!.venv",
-            "-g",
-            "!venv",
-            "-g",
-            "!__pycache__",
-            "-g",
-            "!.dart_tool",
-            "-g",
-            "!build",
-        ]
+        # rg supplies candidates, not a second set of ignore semantics.
+        command = [rg, "--files", "--hidden", "--no-ignore", "--no-config", "--null"]
+        for directory in sorted(EXCLUDED_DIRS):
+            command.extend(["-g", "!" + directory])
         for suffix in suffixes:
             command.extend(["-g", "*" + suffix])
         result = subprocess.run(
@@ -44,29 +28,24 @@ def source_files(repo, suffixes):
         )
         if result.returncode not in {0, 1}:
             raise ValueError("rg 文件索引失败: " + result.stderr[:500])
-        files = [p.replace("\\", "/") for p in result.stdout.splitlines()]
+        candidates = [Path(p).as_posix() for p in result.stdout.split("\0") if p]
+        files = [name for name in candidates if policy.allows_file(name)]
         return sorted(files), "rg"
     files = []
-    for root, dirs, names in os.walk(repo):
+
+    def on_error(error):
+        raise error
+
+    for root, dirs, names in os.walk(repo, onerror=on_error, followlinks=False):
         dirs[:] = [
             d
             for d in dirs
-            if d
-            not in {
-                ".git",
-                "target",
-                ".deps",
-                "node_modules",
-                ".venv",
-                "venv",
-                "__pycache__",
-                ".dart_tool",
-                "build",
-            }
+            if policy.allows_directory((Path(root) / d).relative_to(repo).as_posix())
         ]
         for name in names:
-            if Path(name).suffix in suffixes:
-                files.append((Path(root) / name).relative_to(repo).as_posix())
+            relative = (Path(root) / name).relative_to(repo).as_posix()
+            if policy.allows_file(relative):
+                files.append(relative)
     return sorted(files), "python-walk"
 
 

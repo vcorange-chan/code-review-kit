@@ -10,7 +10,7 @@ description = "Local source evidence and reusable business-flow review HTML"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {file = "LICENSE"}
-dependencies = ["ast-grep-py==0.51.0"]
+dependencies = ["ast-grep-py==0.51.0", "pathspec==1.1.1"]
 
 [project.scripts]
 code-review = "reviewkit.cli:main"

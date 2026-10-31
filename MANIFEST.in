@@ -42,6 +42,7 @@ include reviewkit/cli.py
 include reviewkit/dart.py
 include reviewkit/engine.py
 include reviewkit/explanation_steps.py
+include reviewkit/file_selection.py
 include reviewkit/html_parts.py
 include reviewkit/i18n.py
 include reviewkit/indexer.py
@@ -73,6 +74,7 @@ include skills/code-review-kit/scripts/_location.py
 include skills/code-review-kit/scripts/review.py
 include skills/code-review-kit/scripts/setup.py
 include tests/test_explanation_steps.py
+include tests/test_file_selection.py
 include tests/test_i18n.py
 include tests/test_languages.py
 include tests/test_release_privacy.py

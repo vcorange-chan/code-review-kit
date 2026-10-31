@@ -38,6 +38,8 @@ steps 保留 title/detail/reference，可补 actor/input/result/next。source_in
 
 按文件复用语法索引，按证据复用解释；内容和配置未变时复用完整 HTML。模型读取有字节预算的证据包，通常无需读取完整事实或模板。不会据此宣称未经测量的 token 节省比例。
 
+文件选择使用独立 FileSelection 共用策略，与语法语言无关。rg 只枚举候选（禁用其自身忽略/用户配置），Python 遍历在同一策略下剪枝；两者均应用仓库根内的嵌套 .gitignore/.ignore/.rgignore，后者文件种类优先，种类内更深规则优先，保留否定与被忽略父目录不能重纳入子文件的语义。使用固定 pathspec 纯 Python simple 后端，不复制 Git 匹配器。生成/依赖/私有状态目录与源码符号链接统一排除；不继承仓库外的父级或全局配置，以避免环境改变结果。
+
 MIT；公开发行仅包含通用代码、Skill 和合成示例。私有源码、流程数据、缓存与生成报告不提交。Python 3.11+，原生解析依赖在实际执行环境的可写状态目录安装，支持只读 Skill 挂载。
 
 实现模块及扩展协议见 [架构说明](docs/architecture.md)。
