@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "repository": ".",
+  "title": "文档事件与视图状态（虚构示例）",
+  "nodes": [
+    {"symbol": "reduce_event", "file": "events.py"},
+    {"symbol": "view_label", "file": "events.py"}
+  ]
+}

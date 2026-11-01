@@ -7,6 +7,7 @@ import sys
 import zipfile
 import json
 import os
+import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory() as temp:
@@ -181,6 +182,35 @@ with tempfile.TemporaryDirectory() as temp:
         )
     )
     assert lecture["steps"] == 3 and not lecture["stale_steps"] and not lecture["unbound_steps"]
+    # Exercise the packaged mechanical operations, including a complete old revision.
+    lesson = folder / "lesson.json"
+    shutil.copyfile(ROOT / "examples/document-pipeline/lecture.zh.json", lesson)
+    facts = folder / "tutor-facts/facts.json"
+    run(skill / "scripts/review.py", "lecture", "--lecture", lesson, "--facts", facts, "--accept-new")
+    replacement = folder / "replacement.json"
+    replacement.write_text(json.dumps({"goal": "Explain the same fixed source another way"}), encoding="utf-8")
+    revised = json.loads(run(skill / "scripts/review.py", "tutor", "retell", "--lecture", lesson,
+                             "--facts", facts, "--step", "s1", "--expected-revision", "1", "--replacement", replacement))
+    assert revised["r"] == 2
+    packet = json.loads(run(skill / "scripts/review.py", "tutor", "packet", "--lecture", lesson,
+                            "--facts", facts, "--step", "s1", "--revision", "1", "--bytes", "3000", "--out", folder / "step.json"))
+    assert packet["bytes"] <= 3000
+    next_step = json.loads(run(skill / "scripts/review.py", "tutor", "next", "--lecture", lesson,
+                               "--step", "s1", "--expected-revision", "2"))
+    assert next_step["current"] == "s2" and next_step["position_only"]
+    discussion = folder / "discussion.jsonl"
+    record = folder / "record.json"
+    record.write_text(json.dumps({"step": "s1", "revision": 1, "kind": "ask", "quote": "original",
+                                  "question": "why", "answer": "full answer"}), encoding="utf-8")
+    run(skill / "scripts/review.py", "discuss", "--lecture", lesson, "--discussion", discussion, "--record-file", record)
+    personal = json.loads(run(skill / "scripts/review.py", "lecture", "--lecture", lesson,
+                              "--facts", facts, "--discussion", discussion))
+    assert personal["discussion_records"] == 1 and personal["source_locked"]
+    run(skill / "scripts/review.py", "business", "--manifest", ROOT / "examples/document-pipeline/events-business.json",
+        "--language", "python", "--depth", "0", "--out", folder / "event-facts")
+    events = json.loads(run(skill / "scripts/review.py", "lecture", "--lecture", ROOT / "examples/document-pipeline/events-lecture.zh.json",
+                            "--facts", folder / "event-facts/facts.json", "--html", folder / "events.html"))
+    assert events["steps"] == 4 and not events["stale_steps"]
     print(
         json.dumps(
             {
@@ -192,6 +222,8 @@ with tempfile.TemporaryDirectory() as temp:
                 "languages": doctor["languages"],
                 "mixed_cards": 3,
                 "lecture_steps": lecture["steps"],
+                "event_steps": events["steps"],
+                "tutor_operations_executed": True,
             }
         )
     )

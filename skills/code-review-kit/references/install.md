@@ -2,7 +2,7 @@
 
 Runtime dependencies are installed from the pinned requirements: ast-grep-py (MIT) and [pathspec](https://github.com/cpburnz/python-pathspec) (MPL-2.0, unmodified). Their wheel distributions retain their own notices. pathspec provides the same offline repository-local ignore semantics whether rg is available or not; its simple backend needs no native compiler.
 
-Pi: install the Git repository as a Pi package (`pi install git:github.com/vcorange-chan/code-review-kit@v0.7.1`). It discovers `skills/code-review-kit`; no TypeScript extension or model API is needed. Use `/skill:code-review-kit` to invoke explicitly.
+Pi: install the Git repository as a Pi package (`pi install git:github.com/vcorange-chan/code-review-kit@v0.8.0`). It discovers both skills; no TypeScript extension or model API is needed. Use `/skill:code-review-kit` or `/skill:copy-tutor` explicitly.
 
 Cowork: upload the release's `code-review-kit-skill.zip` in Customize → Skills → Upload a skill, with code execution enabled. The ZIP contains the complete skill and Python tool. Supply repository files in a folder accessible to Cowork's execution environment. Run setup there once if extracting source. Host paths such as a Windows drive letter are not portable; override the business manifest with `--repo` pointing to the visible folder. Default report links navigate embedded source snapshots; external/editor links require explicit configuration.
 

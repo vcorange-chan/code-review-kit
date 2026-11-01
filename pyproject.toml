@@ -5,7 +5,7 @@ backend-path = ["."]
 
 [project]
 name = "code-review-kit"
-version = "0.7.1"
+version = "0.8.0"
 description = "Local source evidence and reusable business-flow review HTML"
 readme = "README.md"
 requires-python = ">=3.11"

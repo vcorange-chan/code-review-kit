@@ -1,6 +1,11 @@
 # Changes
 
-## Unreleased
+## 0.8.0
+
+- Verify portable source identities and read fixed Git blobs without modifying the learning workspace; distinguish workspace snapshots from commit evidence.
+- Bind selection actions and discussions to their actual revision, retain full quotations and unmatched answers, and archive complete previous views through atomic tutor operations.
+- Add step drafts, automatic fold complements, fact-derived signatures, bounded reusable step packets, matching Review behavior reuse, and resumable reading cursors with stale/duplicate request checks.
+- Separate reading progress, fixed behavior and counterfactual reasoning in lecture schema 2; retain legacy schema 1 with explicit notices and add a fictional event-driven Python lesson.
 
 - Add the copy-tutor skill and core `lecture` / `discuss` commands. Lectures cut code lines from facts snapshots, verify that every line of a node is shown or folded with a destination, and bind each step to its node digest so that source changes are marked for review.
 - Record each reason's kind (recorded, inferred, teaching) together with its support and limits. Decisions are optional. Out-of-scope folds collapse on the page while full coverage is still enforced.

@@ -30,7 +30,7 @@ code-review doctor
 Pi：
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.7.1
+pi install git:github.com/vcorange-chan/code-review-kit@v0.8.0
 ```
 
 使用 `/skill:code-review-kit`。Cowork：从 GitHub Release 下载 `code-review-kit-skill.zip`，在 Customize → Skills 上传；需要启用代码执行。上传包是自包含的，首次提取时在实际执行环境安装依赖。它不假定可访问宿主机的盘符。详见 [安装说明](skills/code-review-kit/references/install.md)。
@@ -148,6 +148,12 @@ code-review discuss --lecture my-lecture.json --discussion my-discussion.jsonl -
 ```
 
 格式说明见 [讲义格式](skills/copy-tutor/references/lecture-format.md)。Cowork 用户上传 `copy-tutor-skill.zip`，它自带同一套工具。
+
+新讲义将展示进度、固定程序行为和反事实比较分开，不把逐步展开写成源码补丁历史。可用 `function/business --source-ref COMMIT` 从指定 Git 提交只读提取，工作区无需提交、暂存或切换；本地 facts 保存可离线校验的相关文件快照，完整文件不进入默认模型材料包。讲义首次用 `lecture --accept-new` 锁定来源后不能混用其他快照；旧讲义保留未锁定提示。
+
+`tutor add` 只追加单步草稿，`tutor retell` 原子归档完整旧视图，`tutor select` 计算折叠范围与真实签名，`tutor packet` 生成有字节预算、可复用的单步骤材料。`status/next/resume` 保存阅读位置，不代表已经掌握。完整讨论与选文保留，旧修订独立归属，无法匹配的讨论也可全文回看。操作见 [Tutor 命令](skills/copy-tutor/references/operations.md)。
+
+事件驱动样例：用 `events-business.json` 提取，配合 `events-lecture.zh.json`，沿“旧请求晚到 → 状态守卫 → 界面标签”讲解；源码为 `events.py`，均在 `examples/document-pipeline` 下。它依据静态源码讲解，不包含实际 UI 或运行验证。
 
 ## 发布前的隐私检查
 

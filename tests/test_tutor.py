@@ -12,7 +12,7 @@ from reviewkit.indexer import build_index
 from reviewkit.rust import RustAdapter
 from reviewkit.storage import write_json
 from reviewkit.lecture import accept_new, render_lecture
-from reviewkit.tutor import auto_gaps, prepare_step, retell, step_packet, write_packet
+from reviewkit.tutor import auto_gaps, prepare_step, retell, append_step, step_packet, write_packet, cursor_status, move_cursor
 
 
 class TutorTests(unittest.TestCase):
@@ -36,7 +36,7 @@ class TutorTests(unittest.TestCase):
         write_json(self.path, self.lecture)
 
     def test_retell_archives_complete_view_atomically_and_rejects_repeat(self):
-        before = copy.deepcopy(self.lecture["steps"][0])
+        before = prepare_step(self.lecture, self.facts, self.lecture["steps"][0])
         result = retell(self.path, self.facts, "s1", {"goal": "new explanation"}, 1, "another example")
         after = json.loads(self.path.read_text(encoding="utf-8"))["steps"][0]
         self.assertEqual(result["r"], 2)
@@ -67,7 +67,7 @@ class TutorTests(unittest.TestCase):
 
     def test_gap_complement_uses_other_steps_and_marks_unknown(self):
         step = self.lecture["steps"][0]
-        del step["gaps"]
+        step.pop("gaps", None)
         prepared = prepare_step(self.lecture, self.facts, step)
         self.assertEqual(prepared["gaps"], [{"lines": [65, 69], "label": self.lecture["steps"][2]["short"], "ref": "s3"}])
         step["show"] = [[60, 60]]
@@ -117,6 +117,60 @@ class TutorTests(unittest.TestCase):
         self.assertIn('id="s1-r1-L58"', page)
         packet = step_packet(lecture, self.facts, "s1", 20000, revision=1)
         self.assertEqual(packet["code"][0]["line"], 58)
+
+    def test_navigation_resumes_rejects_stale_and_does_not_double_advance(self):
+        state = self.folder / "reading.json"
+        moved = move_cursor(self.lecture, state, "next", "s1", 1)
+        self.assertEqual(moved["current"], "s2")
+        self.assertTrue(move_cursor(self.lecture, state, "next", "s1", 1)["reused"])
+        self.assertEqual(cursor_status(self.lecture, state)["current"], "s2")
+        self.assertTrue(cursor_status(self.lecture, state)["position_only"])
+        with self.assertRaisesRegex(ValueError, "Outdated"):
+            move_cursor(self.lecture, state, "next", "s2", 99)
+        move_cursor(self.lecture, state, "resume", "s3", 1)
+        self.assertTrue(move_cursor(self.lecture, state, "next", "s3", 1)["end_of_outline"])
+        self.assertTrue(move_cursor(self.lecture, state, "next", "s3", 1)["end_of_outline"])
+        other = copy.deepcopy(self.lecture)
+        other["source_identity"] = "other source"
+        with self.assertRaisesRegex(ValueError, "another lecture/source"):
+            cursor_status(other, state)
+
+    def test_planned_step_packet_does_not_need_full_lesson_written(self):
+        self.lecture["steps"] = self.lecture["steps"][:1]
+        packet = step_packet(self.lecture, self.facts, "s3", 12000)
+        self.assertEqual(packet["step"], "s3")
+        self.assertTrue(packet["code"])
+
+    def test_new_format_rejects_patch_history_story(self):
+        self.lecture["steps"][0]["change"] = {"before": "old code", "after": "new code"}
+        with self.assertRaisesRegex(ValueError, "Fixed-source"):
+            render_lecture(self.lecture, self.facts, self.folder / "bad.html")
+
+    def test_single_step_append_preserves_existing_views_and_refuses_duplicate(self):
+        self.lecture["steps"] = self.lecture["steps"][:1]
+        write_json(self.path, self.lecture)
+        original = copy.deepcopy(self.lecture["steps"][0])
+        draft = self.base["steps"][1]
+        append_step(self.path, self.facts, "s2", draft)
+        after = json.loads(self.path.read_text(encoding="utf-8"))
+        self.assertEqual(after["steps"][0], original)
+        self.assertEqual(after["steps"][1]["id"], "s2")
+        raw = self.path.read_bytes()
+        with self.assertRaisesRegex(ValueError, "already exists"):
+            append_step(self.path, self.facts, "s2", draft)
+        self.assertEqual(self.path.read_bytes(), raw)
+
+    def test_event_driven_lesson_uses_exact_python_source_without_executing(self):
+        from reviewkit.python import PythonAdapter
+        index = build_index(ROOT / "examples/document-pipeline", PythonAdapter(), self.folder / "cache")
+        facts = extract(index, [{"symbol": "reduce_event", "file": "events.py"}, {"symbol": "view_label", "file": "events.py"}], 0, 32)
+        lesson = json.loads((ROOT / "examples/document-pipeline/events-lecture.zh.json").read_text(encoding="utf-8"))
+        stats = render_lecture(lesson, facts, self.folder / "events.html")
+        self.assertEqual((stats["steps"], stats["stale_steps"], stats["unbound_steps"]), (4, [], []))
+        page = (self.folder / "events.html").read_text(encoding="utf-8")
+        self.assertIn("程序行为 · 固定源码", page)
+        self.assertIn("反事实比较", page)
+        self.assertNotIn("行为变化", page)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,283 @@
+{
+  "schema_version": 2,
+  "id": "document-events",
+  "output_language": "zh",
+  "title": "旧请求晚到时，界面为什么不应回退",
+  "business": "文档导入事件如何改变视图状态，并排除旧任务的异步结果。",
+  "source": "虚构的合成 Python 示例 events.py；由提取工具记录实际快照身份。",
+  "scenario": "先导入 A（request_id=a），再导入 B（request_id=b）。A 的 parsed 事件晚到，随后 B 成功。",
+  "observable": "状态依次为 loading(a)、loading(b)、loading(b)、ready(b)。界面标签来自 view_label。",
+  "invariants": [
+    "旧请求的结果不能覆盖当前请求。",
+    "只有 loading 状态接受当前请求的成功或失败结果。",
+    "取消后返回 idle；晚到结果不能让取消失效。"
+  ],
+  "notice": "以下状态变化依据源码静态推演，未运行学习项目。未包含事件发送器、异步调度器和实际 UI。",
+  "not_covered": [
+    "事件字典的输入模式校验。",
+    "持久化、网络、实际界面框架和后台任务取消。"
+  ],
+  "steps": [
+    {
+      "id": "e1",
+      "node": "events.py::type::ViewState",
+      "short": "保存当前状态和请求身份",
+      "layer": "事件与状态",
+      "goal": "先认识事件处理器接收和返回的状态：当前处于哪个阶段，属于哪个请求。",
+      "show": [
+        [
+          7,
+          11
+        ]
+      ],
+      "reasons": [
+        {
+          "kind": "inferred",
+          "text": "需求是异步完成后仍能判断结果属于哪个请求，因此状态同时保存 phase 和 request_id。",
+          "support": "L8–9 声明阶段与请求身份；L20 在接收结果前比较两者。",
+          "limits": "这是从最终源码行为倒推的解释，不代表作者历史动机。"
+        }
+      ],
+      "method": [
+        "用 dataclass 声明状态字段；装饰器 frozen=True 在源码 L6，表示实例字段不能按通常方式重新赋值。"
+      ],
+      "progress": {
+        "seen": "具体请求已确定：A 晚于 B 返回。",
+        "focus": "ViewState 的真实字段。",
+        "next": "e2 查看 start 和 parsed 事件如何返回新状态。"
+      },
+      "behavior": [
+        {
+          "when": "新建默认状态",
+          "result": "phase=idle，request_id=None，文本和错误为空。"
+        }
+      ],
+      "place": "events.py L6–11。装饰器在类型范围外，可在完整文件快照中查看。",
+      "evidence_hash": "40a16409878ead77a6b0c6b0b12ce67e2b7bd996287ae7034513ca77d0f9cbd1",
+      "decisions": [
+        {
+          "line": 9,
+          "text": "状态保留请求身份。",
+          "otherwise": "如果只知道 loading，而不比较请求身份，就无法用当前这条判断排除 A 的晚到结果。"
+        }
+      ]
+    },
+    {
+      "id": "e2",
+      "node": "events.py::reduce_event",
+      "short": "沿一次成功事件走主路径",
+      "layer": "事件与状态",
+      "goal": "把 start(b) 和 parsed(b) 两个事件连接起来：先进入 loading，再得到 ready。",
+      "show": [
+        [
+          14,
+          17
+        ],
+        [
+          22,
+          23
+        ]
+      ],
+      "reasons": [
+        {
+          "kind": "inferred",
+          "text": "处理器返回新的状态，使这次事件得到的完整结果有明确边界。",
+          "support": "L17 和 L23 都返回 ViewState；函数没有对传入 state 的字段赋值。",
+          "limits": "这是从最终源码行为倒推的解释，不代表作者历史动机。"
+        }
+      ],
+      "method": [
+        "按 event.kind 选择分支；用 request_id 标识当前请求。",
+        "parsed 分支用事件文本构造 ready 状态；进入这个分支前还有 e3 的守卫。"
+      ],
+      "progress": {
+        "seen": "e1 已说明状态字段。",
+        "focus": "正常的开始与完成分支；守卫折叠。",
+        "next": "e3 解释为什么 parsed(a) 不能覆盖 B。"
+      },
+      "behavior": [
+        {
+          "when": "收到 start(b)",
+          "result": "返回 loading(b)"
+        },
+        {
+          "when": "当前为 loading(b)，收到 parsed(b)",
+          "result": "返回 ready(b)，保留 B 的文本"
+        }
+      ],
+      "place": "events.py 的 reduce_event；这是同一函数的部分真实行，不是缺少守卫的可执行旧版本。",
+      "evidence_hash": "19314a2722e134c70ebbb058316fe90176e316a12f419608f86cc5f7a715a37c",
+      "stubs": [
+        {
+          "node": "events.py::view_label",
+          "ref": "e4"
+        }
+      ]
+    },
+    {
+      "id": "e3",
+      "node": "events.py::reduce_event",
+      "short": "回到同一函数：晚到、取消和失败",
+      "layer": "事件与状态",
+      "goal": "展开此前折叠的守卫：旧任务、取消后的结果和不适用事件不能改变当前状态。",
+      "show": [
+        [
+          18,
+          21
+        ],
+        [
+          24,
+          26
+        ]
+      ],
+      "reasons": [
+        {
+          "kind": "inferred",
+          "text": "当前任务 B 必须保有状态，因此 A 的晚到结果在身份不符时被忽略。",
+          "support": "L20 比较 request_id；L21 返回原 state。",
+          "limits": "这是从最终源码行为倒推的解释，不代表作者历史动机。"
+        },
+        {
+          "kind": "inferred",
+          "text": "取消通过回到 idle 生效；之后的晚到结果仍会被状态守卫挡住。",
+          "support": "L18–21。实际后台任务是否被终止并未在这里实现。",
+          "limits": "这是从最终源码行为倒推的解释，不代表作者历史动机。"
+        }
+      ],
+      "method": [
+        "先处理 start/cancel，再检查状态与请求身份；通过守卫后才处理 parsed/failed。",
+        "不适用的事件返回原状态；失败结果保存错误文字。"
+      ],
+      "progress": {
+        "seen": "e2 展示过同一固定函数的 start/parsed 行。",
+        "focus": "展开已有的取消、守卫与失败路径。",
+        "next": "e4 查看状态如何对应界面文字。"
+      },
+      "behavior": [
+        {
+          "when": "loading(b) 收到 parsed(a)",
+          "result": "返回原 loading(b)"
+        },
+        {
+          "when": "收到 cancel",
+          "result": "返回 idle"
+        },
+        {
+          "when": "loading(b) 收到 failed(b)",
+          "result": "返回 failed(b)，保存错误文字"
+        },
+        {
+          "when": "未识别或当前不适用的事件",
+          "result": "返回原状态"
+        }
+      ],
+      "place": "仍在 events.py::reduce_event；主路径见 e2。",
+      "evidence_hash": "19314a2722e134c70ebbb058316fe90176e316a12f419608f86cc5f7a715a37c",
+      "decisions": [
+        {
+          "line": 20,
+          "text": "同时比较阶段与请求身份。",
+          "otherwise": "只比较请求身份时，已经取消或完成的任务仍可能接收不适用的结果；只比较阶段则不能区分 A 与 B。"
+        }
+      ]
+    },
+    {
+      "id": "e4",
+      "node": "events.py::view_label",
+      "short": "状态投影成可观察的标签",
+      "layer": "事件与状态",
+      "goal": "把内部 phase 映射为界面标签，闭合“事件 → 状态 → 用户看到什么”的路线。",
+      "show": [
+        [
+          29,
+          32
+        ]
+      ],
+      "reasons": [
+        {
+          "kind": "inferred",
+          "text": "把标签映射集中在一个函数，事件处理器只负责返回状态，调用方可据此取得文字。",
+          "support": "L29–32 按 state.phase 查标签；reduce_event 不返回界面文案。",
+          "limits": "示例没有真实 UI 接线；这是函数可供调用的关系，不证明框架已自动订阅状态。"
+        }
+      ],
+      "method": [
+        "用字典按 phase 查找标签；示例只定义 idle/loading/ready/failed。"
+      ],
+      "progress": {
+        "seen": "已沿 A/B 请求和取消失败路径说明状态。",
+        "focus": "固定状态与可见标签的映射。"
+      },
+      "behavior": [
+        {
+          "when": "phase=loading",
+          "result": "返回 Reading document"
+        },
+        {
+          "when": "phase=ready",
+          "result": "返回 Document ready"
+        },
+        {
+          "when": "输入未知 phase",
+          "result": "字典查找会抛 KeyError；外部状态校验不在范围内。"
+        }
+      ],
+      "place": "events.py::view_label，位于事件处理器之后。",
+      "evidence_hash": "e251d78f2519f61965dd6c9d16971674ef8a7ed371f3399fb8d3ac316d642a6d"
+    }
+  ],
+  "outline": [
+    {
+      "id": "e1",
+      "node": "events.py::type::ViewState",
+      "short": "保存当前状态和请求身份",
+      "show": [
+        [
+          7,
+          11
+        ]
+      ]
+    },
+    {
+      "id": "e2",
+      "node": "events.py::reduce_event",
+      "short": "沿一次成功事件走主路径",
+      "show": [
+        [
+          14,
+          17
+        ],
+        [
+          22,
+          23
+        ]
+      ]
+    },
+    {
+      "id": "e3",
+      "node": "events.py::reduce_event",
+      "short": "回到同一函数：晚到、取消和失败",
+      "show": [
+        [
+          18,
+          21
+        ],
+        [
+          24,
+          26
+        ]
+      ]
+    },
+    {
+      "id": "e4",
+      "node": "events.py::view_label",
+      "short": "状态投影成可观察的标签",
+      "show": [
+        [
+          29,
+          32
+        ]
+      ]
+    }
+  ]
+}

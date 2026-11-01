@@ -92,6 +92,7 @@ def anchor(repo, index, ref):
         "anchor_id": identity,
         "function_id": fn["id"] if fn else None,
         "hash": content_hash,
+        "snippet_end_line": min(len(lines), max(end, start + 7)),
         "snippet": "\n".join(lines[start - 1 : min(len(lines), max(end, start + 7))]),
     }, fn
 
@@ -199,7 +200,7 @@ def extract_business(index, manifest, depth, max_nodes):
                 "file": ref["file"],
                 "line": ref["line"],
                 "end_line": ref["end_line"],
-                "source": ref["snippet"],
+                "source": "\n".join(ref["snippet"].split("\n")[:ref["end_line"] - ref["line"] + 1]),
                 "parameters": "业务输入（见解释）",
                 "return_type": "业务输出（见解释）",
                 "signature": "源码上下文",

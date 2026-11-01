@@ -114,6 +114,16 @@ EN = {
 
 # Lecture labels live in their own table so short phrases never rewrite review templates.
 LECTURE_EN = {
+    "旧修订缺少完整视图，仅显示已有正文。": "Legacy revision has no complete view snapshot; existing prose is preserved.",
+    "旧式手填签名 · 未核验": "Legacy manually entered signature · unverified",
+    "部分讨论无法对应当前步骤、修订或源码身份，全文保留在页面底部。": "Some discussions do not match current steps, revisions or source identity; full records are preserved below.",
+    "展示进度": "Reading progress",
+    "前面看过": "Previously shown",
+    "本次展开": "Focus of this step",
+    "接下来讲": "Next topic",
+    "程序行为 · 固定源码": "Program behavior · fixed source",
+    "反事实比较": "Counterfactual comparison",
+    "旧版对照 · 并非源码历史": "Legacy comparison · not source history",
     "快照身份": "Snapshot identity",
     "来源未锁定：旧讲义兼容显示，不能据此确认指定提交。": "Source not locked: legacy lecture; the claimed commit has not been verified.",
     "逐步复现讲义 · 本地生成": "STEP-BY-STEP REBUILD LECTURE · generated locally",

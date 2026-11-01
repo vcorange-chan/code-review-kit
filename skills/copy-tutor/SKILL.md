@@ -1,104 +1,45 @@
 ---
 name: copy-tutor
-description: Teach how an existing program is built by walking a learner through rebuilding one business flow step by step - what each step must achieve, which needs and constraints lead to the design, which method implements it, and why earlier functions are revisited. Produces a shareable HTML lecture whose code excerpts are exact lines from Code Review Kit's source snapshot, with questions and notes bound to lecture revisions. Use when the user wants to learn or reproduce how a project or feature was built ("带我复现", "逐步讲解这个项目怎么搭的", "copy-tutor", "tutor next / retell / ask / note").
+description: Teach one business flow from fixed Rust/Python/Dart source, explaining needs, design choices, methods and code excerpts in a collapsible HTML lecture. Use for copy-tutor, 带我复现, step-by-step construction guides, and tutor next/retell/ask/note. Uses Code Review Kit evidence; never writes the learning project's code.
 metadata:
-  runtime: Python 3.11+; the bundled Code Review Kit tool extracts facts (first setup needs pip access) and renders lectures.
+  runtime: Python 3.11+; bundled offline Code Review Kit; first setup may need pip access.
 ---
 
 # copy-tutor
 
-带用户沿“逐步搭建”的路线理解一项业务：每一步要做成什么，哪些需求、约束和代价导致了这样的设计，用什么方法实现，以及为什么之后要回到前面的函数补代码。
+帮助用户理解项目为什么这样设计、每段代码有什么意义。沿可能的书写路线逐步展开一份**固定版本的真实源码**，可以回到前面的函数展示更多行。用户不必复制、粘贴、运行或接受测验。Tutor 选择行与写讲解，不生成或修改学习项目代码。
 
-复现对象永远是一份固定版本的源码。各步骤只是逐步展开这份源码，讲解可以重讲。你只负责选择代码行和撰写讲解，**不写、不改学习项目的代码**。
+命令使用本 Skill 的 `python scripts/review.py`（也可 python3）。CLI、Codex、Claude Code、Pi/Cowork 共用这套核心，不自行写解析器或 HTML。展示语言按用户明确指定，否则按提示词语言，提取/渲染时传 `--output-language zh|en`。
 
-下面的命令都相对于本 skill 目录（`python3` 也可以）。讲义格式见 [references/lecture-format.md](references/lecture-format.md)，样例见仓库里的 `examples/document-pipeline/lecture.zh.json`。
+## 开始一项业务
 
-## 流程
+1. 确认项目、业务和固定提交；已确认的不重复问。Git 项目提取加 `--source-ref COMMIT`，只读 Git 对象，无需用户提交、暂存或切换工作区。非 Git 项目固定工作区快照，不能冒充提交。
+2. 初次检查 `doctor`，缺依赖才运行 `scripts/setup.py`。用 Kit 的 `function --repo … --symbol … --file … --source-ref … --out …` 或 `business --manifest …` 提取；业务清单明确列出必需节点。讲义、讨论和状态放在学习项目之外。
+3. 从有预算的 Kit 证据包确定具体请求、可观察结果和必须保持的约束，再排大纲请用户确认。不要默认读整份 facts/仓库。“主路径、数据、错误、边界、性能”是检查清单，不是强制课序；事件/UI 先看动作与状态，事务先看约束与恢复。
+4. 按[数据格式](references/lecture-format.md)创建 schema_version:2 的短讲义骨架：稳定 id、scenario/observable/invariants、outline 与空 steps。outline 可包含节点与计划展示范围，先不写全部正文。
 
-1. **确认范围**
-   - 确认学习项目路径和一项业务。
-   - 确认固定提交，提取时使用 `--source-ref COMMIT`。工具只读 Git 对象，不要求用户提交、暂存或切换工作区。非 Git 项目可以固定工作区快照，但不能称为提交版本。
-   - 讲义目录放在学习项目之外，例如 `<笔记根目录>/<项目>/<业务>/`。
+## 每次只推进一块
 
-2. **取事实**
-   - 第一次使用前运行 `python scripts/review.py doctor`；缺少依赖时运行 `python scripts/setup.py`。
-   - 提取事实：
-     - 单个函数：`python scripts/review.py function --repo REPO --source-ref COMMIT --symbol SYMBOL --file FILE --out <讲义目录>/kit`
-     - 跨模块业务：用业务清单 `business --manifest …`，在清单里直接列出课程必须包含的节点。
-   - 这一步只读源码，不运行项目。
-   - 只读需要的事实字段：节点的 `id`、`line`/`end_line`、`calls`、`branches`、`errors`、`returns`、`imports`，以及 `source`。不要通读整个仓库或整份 facts。
-   - `lecture` 命令发现讲义需要的节点不在事实里时会报错，并说明有没有节点因上限被截断。
+- 先取材料：`tutor packet --lecture … --facts … --step ID --out step-packet.json --bytes 12000`。支持尚未讲到的 outline 节点、旧修订和可选讨论。证据不足才补特定节点；不重读完整仓库。可用 --explanations 复用有效 Review 行为解释，不能当作动机证据。
+- 每步以一个函数或类型为中心；约 20 行是软预算，保持多行表达式完整。只写这一步的数据草稿，然后用 `tutor add --lecture … --facts … --step ID --replacement draft.json` 追加，不重写全讲义。
+- 只给 show；工具计算折叠补集和其他步骤去向。必要时用 defer/remainder，未知保留待安排。被调函数写 `{node, ref}`，工具提取真实签名。
+- 每步讲目标、理由、实现方法、代码含义与位置。理由包含性质 kind、依据 support、必要局限 limits。实验支持行为，注释代表作者说法；都不独自证明设计动机。不能确认的动机照实说明。
+- 区分 progress（前面看过/本次展开/接下来）、behavior（固定代码在何种条件下产生什么结果）、decisions[].otherwise（明确的反事实比较）。不写“原来没有处理，现在加入处理”的源码演变故事。
+- 关键决策最多 3 个，没有就不凑；讲到实现方法即可，语法概念留给用户提问。可以调整详略，但提问少不代表水平高，不建立能力画像。
+- 运行 `lecture --lecture … --facts … --discussion …` 生成 HTML，告知路径，等待用户选下一步/重讲。工具只维护阅读位置，不宣布用户掌握。
 
-3. **排大纲，经用户确认后才写正文**。先回答三个问题，再决定函数的展示顺序：
-   - 拿哪个**具体请求**贯穿整门课？
-   - 用户会**观察到**什么变化？
-   - 哪些**状态或约束**必须始终成立？
+## 响应用户动作
 
-   “主路径骨架 → 数据结构 → 错误路径 → 边界 → 抽象与性能”只是遗漏检查清单和步骤标签，不是固定课序。不同类型的项目可以这样调整：
-   - 事件驱动：先讲一个事件怎样改变状态；
-   - UI：先讲用户动作 → 状态变化 → 界面结果；
-   - 配置密集的系统：先讲配置来源和覆盖顺序；
-   - 事务、并发、资源管理：先讲必须守住的约束和失败后的恢复。
+页面复制的是**对话消息，不是待执行的 shell**。含讲义/步骤/修订身份；处理前核对身份，过期时读当前状态，不猜编号。
 
-   其他要求：
-   - 每步以一个主要节点（函数或类型）为中心，类型、配置等可以单独作为准备步骤。
-   - 把大纲以表格形式给用户确认，用户可以调整阅读路线。
+- **下一步**：`tutor next --lecture … --step ID --expected-revision K` 记录用户选择的位置。下一步已有有效正文就直接定位，尚未撰写才取包写草稿。只说“继续”时用 `tutor status --lecture …` 恢复位置。中途明确跳转用 resume；展示链接附加 #步骤id。到大纲末尾说明路线已结束，不等同于已经学会。
+- **重讲**：写新解释 replacement.json，运行 `tutor retell --lecture … --facts … --step ID --expected-revision K --replacement … --reason …`。工具保存完整旧视图并增修订；不手工编辑 earlier/r。渲染后停留本步。
+- **提问/旁注**：页面给出 `{target, quote}`。仅取目标修订的必要材料作答，不推进主线。完整选文、问题、回答或用户旁注写入本地 JSON，经 `discuss --lecture … --discussion … --record-file …` 追加，然后重渲染。不得截断原记录、用摘要替换或自动删除；只有用户明确要求才能删除。
 
-4. **逐步写讲义**
-   - 每次只写一步，写进 `lecture.json`，然后运行：
-     `python scripts/review.py lecture --lecture <讲义目录>/lecture.json --facts <讲义目录>/kit/facts.json --discussion <讲义目录>/discussion.jsonl --accept-new`
-   - `--accept-new` 只给尚未绑定的步骤写入当前证据摘要。
-   - 报错就修改数据，不要绕过校验。
-   - 把 HTML 路径告诉用户，然后停下，等用户说“下一步”或“重讲”。
-   - 给别人看的公开版讲义，省略 `--discussion` 再渲染一次。
+具体命令、预算/缓存、状态和结构化讨论见[机械操作](references/operations.md)，按当前动作读取。重讲与讨论更新由工具负责；AI 专注解释、路线和不确定性。
 
-5. **响应命令**。用户在页面上点按钮复制命令，或直接输入。`<讲义id>/sN.rK` 表示讲义里第 N 步的第 K 次讲解。
-   - `tutor next`：写下一步。
-   - `tutor retell <讲义id>/sN`：原位重讲。
-     1. 用 `tutor packet` 取当前步骤材料，换讲法或例子，只把新讲解写进 replacement JSON；
-     2. 运行 `tutor retell --lecture … --facts … --step sN --expected-revision K --replacement replacement.json --reason "…"`；
-     3. 工具原子保存旧正文、代码范围、签名和位置，并递增修订。不要手工搬运 earlier 或改 r；重新渲染后停留本步。
+## 运行与共享
 
-     步骤 id 永不改变或复用，重排步骤也不改 id。
-   - 页面会复制 `tutor ask {"target":"<讲义id>/sN.rK","quote":"完整选文"}`；旧式命令也可由你理解。只读这一步的代码行和讲解来回答，不推进主线。回答后运行：
-     `python scripts/review.py discuss --lecture … --discussion … --record-file question.json`
-     然后重新渲染。
-   - `tutor note <讲义id>/sN.rK "引文" 理解`：用 `discuss … --kind note --text "…"` 原样记录用户的话。
-   - 讨论记录只能追加。只有用户明确要求时才可以删除；整理时不能用摘要替换原始记录。
+默认只读分析。确需运行学习项目时，逐次说明命令、目录、观察目标并先征得用户确认，在临时副本/隔离环境执行；没运行就不标实测。
 
-机械操作和可复制命令按需读取 [references/operations.md](references/operations.md)。写每步前运行 `tutor packet --lecture … --facts … --step sN --out step-packet.json --bytes 12000`；它只包含本步证据、必要签名及讨论，明确列出遗漏。可传 `--explanations` 复用摘要匹配的 Review 行为解释，不当作动机证据。包不够才补取特定节点，不重读仓库。重复包直接复用。
-
-## 讲解规则
-
-- **目标**：直接说明这一步要做成什么、为什么需要它。这是导览，不向用户出题。
-- **理由要连起来**：写出需求、必须满足的正确性要求、当前的选择、付出的代价。每条理由包含：
-  - `kind`：`recorded`（作者明确记录过）、`inferred`（根据结果推断）或 `teaching`（为了教学给出的解释）；
-  - `support`：支持这条理由的具体源码行、注释或实验；
-  - `limits`：还有什么无法确定。
-
-  实验只能支持“行为是这样”，不能单独证明作者的动机；注释说明的是作者的说法，不自动证明说法正确。能确认行为、但无法确定选择理由时，就照实写出来。
-- **实现方法**：讲到方法和关键工具、参数为止，例如“用 ffmpeg 的 -vn 去掉视频流”。语法、参数含义、概念细节留给用户提问。可以按本次对话的提问调整详略，但不要据此建立能力画像：提问少不等于水平高。
-- **代码节选**：
-  - 每步约 20 行，只是软预算。多行表达式保持完整；新手可以少看几行。
-  - 只指定 show，工具计算其余折叠范围；从其他步骤找已有去向。需要时给 defer 或 remainder；未知去向保留“待安排”，不要编造。旧的显式 gaps 继续兼容。
-  - 与课程无关的大段代码标上 `out: true`，页面会把它们合并成一条“本课程不涉及”，不让读者逐条看去向说明。
-- **关键决策**：只写真正存在取舍的地方，最多 3 处，没有就不写。不要为了凑数编一个明显更差的替代方案。
-- **行为变化**：写“之前 / 现在”。错误路径步骤改写成“考虑到……所以……”的列表（`consider`）。
-- **放在哪里**：写明文件、排在哪个函数前后、需要的 import（从事实的 `imports` 里取），让读者能自行复现。
-- 被调函数的占位引用用 `{node, ref}`，工具从快照派生真实签名，不在讲义中手写代码或签名。
-
-## 运行学习项目
-
-只有当实测能帮助理解行为时才运行，而且**每次都要先征得用户确认**：
-
-- 说明具体命令、在哪个目录运行、想观察什么结果；
-- 在临时副本或隔离环境中运行，不往学习项目里写东西；
-- 结果作为理由的 `support`，写明命令和关键输出。
-
-用户不同意就不运行，只说明“可以运行某条命令来观察”。
-
-## 首版不做
-
-学习者画像、自动判断每行代码的教学角色、普通聊天用的教学包、讲义共享库、编辑器插件。
-
-页面上的“复制为对话消息”可以把选中的原文、步骤目标和源码位置交给任意聊天模型提问；但这些问答不会自动存回讨论记录。
+公开讲义渲染时省略 --discussion，且不分享个人 discussion/state 文件。页面不调用模型。“复制为对话消息”可给普通 Chat，但问答需自行保存。首版不做模型 API、画像、共享库、编辑器插件或普通 Chat 完整教学包。

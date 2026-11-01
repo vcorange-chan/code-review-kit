@@ -16,7 +16,7 @@ from .storage import digest, resolve_source
 def git(repo, *args, required=True, input_data=None):
     try:
         result = subprocess.run(
-            ["git", "-C", str(repo), *args], input=input_data, capture_output=True, timeout=60
+            ["git", "-C", str(repo), "-c", "core.fsmonitor=false", *args], input=input_data, capture_output=True, timeout=60
         )
     except (OSError, subprocess.TimeoutExpired):
         if required:
@@ -138,7 +138,9 @@ def verify_source(facts):
             text = ref.get("source", ref.get("snippet"))
             if text is None:
                 continue
-            first, last = ref["line"], ref["end_line"]
+            first = ref["line"]
+            last = (ref.get("snippet_end_line", first + len(text.split("\n")) - 1)
+                    if "source" not in ref else ref["end_line"])
             lines = files[ref["file"]]["text"].splitlines()
             if not 1 <= first <= last <= len(lines) or text != "\n".join(lines[first - 1:last]):
                 raise ValueError("Node does not match source snapshot: " + ref["file"])

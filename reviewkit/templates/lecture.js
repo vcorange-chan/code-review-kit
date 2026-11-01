@@ -34,6 +34,11 @@
       if (!text.trim() || !step || !endElement || endElement.closest(".step") !== step || endElement.closest("[data-revision]") !== revision) {
         sel.hidden = true; current = null; return;
       }
+      var range = selection.getRangeAt(0);
+      var mixed = Array.from(step.querySelectorAll("[data-revision]")).some(function (other) {
+        return other !== revision && other.dataset.revision !== revision.dataset.revision && range.intersectsNode(other);
+      });
+      if (mixed) { sel.hidden = true; current = null; return; }
       current = { step: step, revision: revision.dataset.revision, goal: revision.dataset.goal || step.dataset.goal, quote: text };
       var rect = selection.getRangeAt(0).getBoundingClientRect();
       sel.style.left = Math.max(8, rect.left + window.scrollX) + "px";

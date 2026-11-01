@@ -17,6 +17,9 @@ include docs/release-privacy.md
 include docs/review-example.png
 include docs/review-findings.md
 include examples/document-pipeline/business.json
+include examples/document-pipeline/events-business.json
+include examples/document-pipeline/events-lecture.zh.json
+include examples/document-pipeline/events.py
 include examples/document-pipeline/explanations.en.json
 include examples/document-pipeline/explanations.json
 include examples/document-pipeline/lecture.zh.json

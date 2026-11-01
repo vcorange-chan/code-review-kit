@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "id": "document-pipeline-run",
   "output_language": "zh",
   "title": "文档导入：必需阶段与可选阶段",
@@ -50,26 +50,10 @@
           75
         ]
       ],
-      "gaps": [
-        {
-          "lines": [
-            65,
-            69
-          ],
-          "label": "可选阶段：失败时保留上一步的结果",
-          "ref": "第 3 步"
-        }
-      ],
       "stubs": [
         {
-          "name": "accept(value: &str) -> Result<String, String>",
-          "where": "src/lib.rs L2",
-          "ref": "第 2 步写函数体"
-        },
-        {
-          "name": "open_source、decode、parse、split、commit、collect、finish、read_result",
-          "where": "src/lib.rs L6–57",
-          "ref": "与 accept 结构相同，不展开"
+          "node": "src/lib.rs::accept",
+          "ref": "s2"
         }
       ],
       "decisions": [
@@ -79,12 +63,23 @@
           "otherwise": "改成 unwrap() 的话，输入不合格时程序会直接崩溃，调用者拿不到可以处理的错误。"
         }
       ],
-      "change": {
-        "before": "没有处理流程。",
-        "after": "run(\"report\") 依次经过各阶段，返回 Ok(\"report\")；run(\"\") 在第一个阶段就返回 Err(\"accept failed\")。"
-      },
       "place": "src/lib.rs 末尾，位于所有阶段函数之后。",
-      "evidence_hash": "3ed8832c500115d39c1d5d2ff240941000c7472a71941df27372bef33a02707b"
+      "evidence_hash": "3ed8832c500115d39c1d5d2ff240941000c7472a71941df27372bef33a02707b",
+      "progress": {
+        "seen": "尚未开始这条路线。",
+        "focus": "主流程：一条直线串起所有阶段"
+      },
+      "behavior": [
+        {
+          "when": "必需阶段返回 Err",
+          "result": "立即从 run 返回该错误",
+          "next": "调用者处理失败"
+        },
+        {
+          "when": "各必需阶段成功",
+          "result": "向后传递文档；可选阶段处理在 s3 展开"
+        }
+      ]
     },
     {
       "id": "s2",
@@ -115,13 +110,16 @@
           5
         ]
       ],
-      "gaps": [],
       "consider": [
         "空文档：直接返回错误（L3）。",
         "包含标记 error_1 的文档：模拟这个阶段的业务失败（L3）。示例用它来演示错误分支。"
       ],
       "place": "src/lib.rs 开头，第一个函数。其余 13 个阶段函数结构相同，只有名字和错误标记不同。",
-      "evidence_hash": "8b88f80869d753727cbc7e192befdfe623b35d36643d730659a57c7a48dd41d8"
+      "evidence_hash": "8b88f80869d753727cbc7e192befdfe623b35d36643d730659a57c7a48dd41d8",
+      "progress": {
+        "seen": "前面展示同一份固定源码的相关部分。",
+        "focus": "第一个阶段：检查输入并交出结果"
+      }
     },
     {
       "id": "s3",
@@ -147,24 +145,6 @@
           69
         ]
       ],
-      "gaps": [
-        {
-          "lines": [
-            58,
-            64
-          ],
-          "label": "接收、读取、解码、解析、拆分（必需阶段）",
-          "ref": "第 1 步已讲"
-        },
-        {
-          "lines": [
-            70,
-            75
-          ],
-          "label": "提交、收集、完成、读取结果，然后返回",
-          "ref": "第 1 步已讲"
-        }
-      ],
       "decisions": [
         {
           "line": 65,
@@ -172,12 +152,61 @@
           "otherwise": "如果也用 ?，任何一个可选阶段出错，整份文档都会导入失败。"
         }
       ],
-      "change": {
-        "before": "任何阶段失败都会中止。",
-        "after": "文档包含 error_6（清理失败）时，run 仍然返回 Ok，只是跳过了清理。"
-      },
       "place": "run 中 split 之后、commit 之前（L65–69）。",
-      "evidence_hash": "3ed8832c500115d39c1d5d2ff240941000c7472a71941df27372bef33a02707b"
+      "evidence_hash": "3ed8832c500115d39c1d5d2ff240941000c7472a71941df27372bef33a02707b",
+      "progress": {
+        "seen": "s1 已展示必需阶段；可选阶段当时折叠。",
+        "focus": "展开固定源码 L65–69，解释已有的失败降级。"
+      },
+      "behavior": [
+        {
+          "when": "可选阶段成功",
+          "result": "使用该阶段返回的新文档"
+        },
+        {
+          "when": "可选阶段失败",
+          "result": "使用调用前的文档继续后续阶段"
+        }
+      ]
+    }
+  ],
+  "outline": [
+    {
+      "id": "s1",
+      "node": "src/lib.rs::run",
+      "short": "主流程：一条直线串起所有阶段",
+      "show": [
+        [
+          58,
+          64
+        ],
+        [
+          70,
+          75
+        ]
+      ]
+    },
+    {
+      "id": "s2",
+      "node": "src/lib.rs::accept",
+      "short": "第一个阶段：检查输入并交出结果",
+      "show": [
+        [
+          2,
+          5
+        ]
+      ]
+    },
+    {
+      "id": "s3",
+      "node": "src/lib.rs::run",
+      "short": "回到主流程：可选阶段失败时降级",
+      "show": [
+        [
+          65,
+          69
+        ]
+      ]
     }
   ]
 }

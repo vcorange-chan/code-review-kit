@@ -19,6 +19,8 @@ CLI / Pi / Cowork → 语言适配器 → 事实与证据摘要 → 独立解释
 - `source_links.py`：默认嵌入源码与真实行号定位；显式外部链接策略。
 - `render.py`：页面组装和证据索引；`reviewkit/templates/` 是唯一样式源。
 - `lecture.py`：copy-tutor 讲义校验、按 facts 快照切取代码行、步骤证据绑定、讨论追加与讲义页面渲染；模板为 `templates/lecture.*`。
+- `source_identity.py`：只读 Git blob 提取、工作区/提交来源区分、文件原文与摘要、可离线核对的快照身份；不执行 checkout hooks/过滤器。
+- `tutor.py`：单步追加、完整重讲归档、折叠补集、事实签名、单步骤字节预算包与阅读位置。Skill 只编排教学和解释，不手工迁移修订历史。
 
 新增语言实现 `parse / resolve_call / related_types`，输出共享字段并注册适配器。符号、范围、调用状态与来源证据属于共同协议；某种语言的语法和解析策略留在适配器内。第一版不预建尚未使用的语言实现。
 

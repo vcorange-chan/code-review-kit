@@ -80,7 +80,8 @@ class LectureTests(unittest.TestCase):
 
     def test_adjacent_out_of_scope_gaps_collapse(self):
         step = self.lecture["steps"][2]
-        step["gaps"][1:] = [
+        step["gaps"] = [
+            {"lines": [58, 64], "label": "main", "ref": "s1"},
             {"lines": [70, 72], "label": "a", "out": True},
             {"lines": [73, 75], "label": "b", "out": True},
         ]
@@ -90,7 +91,7 @@ class LectureTests(unittest.TestCase):
     def test_discussion_keeps_revision_and_unmatched_records(self):
         discuss(self.lecture, self.log, "s3", "ask", "unwrap_or", "为什么?", "因为可选。")
         step = self.lecture["steps"][2]
-        step["earlier"] = [{"r": 1, **{k: step[k] for k in ["goal", "reasons", "method", "decisions", "change"]}}]
+        step["earlier"] = [{"r": 1, **{k: step[k] for k in ["goal", "reasons", "method", "decisions", "progress", "behavior"] if k in step}}]
         step["r"] = 2
         discuss(self.lecture, self.log, "s3", "note", "", text="当前修订的旁注")
         with self.assertRaisesRegex(ValueError, "1–2"):
@@ -133,6 +134,16 @@ class LectureTests(unittest.TestCase):
         self.lecture["source_identity"] = "different-snapshot"
         with self.assertRaisesRegex(ValueError, "source identity differs"):
             self.render()
+
+    def test_wrong_evidence_discussion_kept_as_unmatched_in_full(self):
+        discuss(self.lecture, self.log, "s1", "ask", "quote", "q", "KEEP_THIS_ANSWER")
+        record = json.loads(self.log.read_text(encoding="utf-8"))
+        record["evidence_hash"] = "different evidence"
+        self.log.write_text(json.dumps(record) + "\n", encoding="utf-8")
+        stats, page = self.render(discussion_path=self.log)
+        self.assertEqual(stats["unmatched_discussion"], 1)
+        self.assertIn("KEEP_THIS_ANSWER", page)
+        self.assertNotIn('class="discussion"', page)
 
 
 if __name__ == "__main__":

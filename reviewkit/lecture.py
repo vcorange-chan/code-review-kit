@@ -37,20 +37,34 @@ def check_prose(where, prose):
         raise ValueError(f"{where}: 关键决策最多 3 处")
     if "change" in prose and "consider" in prose:
         raise ValueError(f"{where}: change 与 consider 只能选一个")
+    if "progress" in prose and (not isinstance(prose["progress"], dict) or any(
+        k not in {"seen", "focus", "next"} or not isinstance(v, str) for k, v in prose["progress"].items()
+    )):
+        raise ValueError("progress requires seen/focus/next text")
+    if "behavior" in prose and (not isinstance(prose["behavior"], list) or any(
+        not isinstance(b, dict) or not all(isinstance(b.get(k), str) for k in ("when", "result"))
+        or ("next" in b and not isinstance(b["next"], str)) for b in prose["behavior"]
+    )):
+        raise ValueError("behavior requires when/result and optional next text")
 
 
 def check_lecture(lecture):
-    if lecture.get("schema_version") != 1 or not isinstance(lecture.get("id"), str):
-        raise ValueError("讲义需要 schema_version:1 与字符串 id")
+    if lecture.get("schema_version") not in {1, 2} or not isinstance(lecture.get("id"), str):
+        raise ValueError("讲义需要 schema_version:1/2 与字符串 id")
     if not STEP_ID.fullmatch(lecture["id"]):
         raise ValueError("讲义 id 只能使用字母、数字、下划线和连字符")
     seen = set()
+    outline_ids = [s["id"] for s in lecture.get("outline", [])]
+    if len(outline_ids) != len(set(outline_ids)) or any(not STEP_ID.fullmatch(s) for s in outline_ids):
+        raise ValueError("Outline step IDs must be unique and stable")
     for step in lecture["steps"]:
         sid = step.get("id", "")
         if not STEP_ID.fullmatch(sid) or sid in seen:
             raise ValueError(f"步骤 id 无效或重复: {sid!r}")
         seen.add(sid)
         check_prose(sid, step)
+        if lecture["schema_version"] == 2 and "change" in step:
+            raise ValueError("Fixed-source lessons use progress/behavior, not before/after code changes")
         current = step.get("r", 1)
         revisions = set()
         for old in step.get("earlier", []):
@@ -105,6 +119,21 @@ def read_discussion(path):
                 raise ValueError(f"讨论记录第 {number} 行缺少 lecture/step/r/kind")
             records.append(record)
     return records
+
+
+def record_matches(lecture, step, record):
+    if record["step"] != step["id"]:
+        return False
+    revision = step if record["r"] == step.get("r", 1) else next(
+        (old for old in step.get("earlier", []) if old["r"] == record["r"]), None
+    )
+    if revision is None:
+        return False
+    source = revision.get("source_identity", lecture.get("source_identity"))
+    return not (
+        (record.get("source_identity") and source and record["source_identity"] != source)
+        or (record.get("evidence_hash") and revision.get("evidence_hash") and record["evidence_hash"] != revision["evidence_hash"])
+    )
 
 
 def discuss(lecture, discussion_path, step_id, kind, quote, question=None, answer=None, text=None, revision=None):
@@ -225,13 +254,13 @@ class LectureRenderer:
         method = "".join(f"<li>{e(m)}</li>" for m in prose.get("method", []))
         decisions = "".join(
             f'<li><a href="#{sid}-L{d["line"]}" class="jump">L{d["line"]}</a>{e(d["text"])}'
-            + (f'<div class="else"><b>{t("不这样写会怎样")}</b>{e(d["otherwise"])}</div>' if d.get("otherwise") else "")
+            + (f'<div class="else"><b>{t("反事实比较")}</b>{e(d["otherwise"])}</div>' if d.get("otherwise") else "")
             + "</li>"
             for d in prose.get("decisions", [])
         )
         if "change" in prose:
             change = (
-                f'<div class="block"><h3>{t("行为变化")}</h3><div class="change">'
+                f'<div class="block"><h3>{t("旧版对照 · 并非源码历史")}</h3><div class="change">'
                 f'<div><b>{t("之前")}</b>{e(prose["change"]["before"])}</div>'
                 f'<div><b>{t("现在")}</b>{e(prose["change"]["after"])}</div></div></div>'
             )
@@ -240,6 +269,18 @@ class LectureRenderer:
             change = f'<div class="block"><h3>{t("考虑到这些情况")}</h3><ul>{items}</ul></div>'
         else:
             change = ""
+        progress = prose.get("progress", {})
+        if progress:
+            change += '<div class="block progress"><h3>' + t("展示进度") + '</h3>' + ''.join(
+                f'<p><b>{t(label)}</b>{e(progress[key])}</p>'
+                for key, label in [("seen", "前面看过"), ("focus", "本次展开"), ("next", "接下来讲")]
+                if progress.get(key)
+            ) + '</div>'
+        if prose.get("behavior"):
+            change += '<div class="block behavior"><h3>' + t("程序行为 · 固定源码") + '</h3><ul>' + ''.join(
+                f'<li><b>{e(b["when"])}</b> → {e(b["result"])}'
+                + (f' → {e(b["next"])}' if b.get("next") else '') + '</li>' for b in prose["behavior"]
+            ) + '</ul></div>'
         upper = (
             f"<h2>{e(prose['goal'])}</h2>"
             + (f'<div class="block"><h3>{t("为什么这样设计")}</h3><ul class="reasons">{reasons}</ul></div>' if reasons else "")
@@ -252,7 +293,7 @@ class LectureRenderer:
 
     def discussion(self, step):
         t = self.t
-        mine = [r for r in self.records if r["step"] == step["id"]]
+        mine = [r for r in self.records if record_matches(self.lecture, step, r)]
         if not mine:
             return ""
         asks = sum(r["kind"] == "ask" for r in mine)
@@ -299,6 +340,8 @@ class LectureRenderer:
             if "show" in old and "node" in old:
                 old = prepare_step(self.lecture, self.facts, old)
                 old_code = '<div class="code">' + self.code({**old, "id": old_id}, self.nodes[old["node"]])[0] + '</div>'
+            else:
+                old_code = f'<p class="muted">{t("旧修订缺少完整视图，仅显示已有正文。")}</p>'
             old_upper, old_lower = self.prose(old_id, old)
             earlier_parts.append(
                 f'<details class="earlier" data-revision="{old["r"]}" data-goal="{e(old["goal"])}"><summary>{t("第 {} 次讲解").format(old["r"])}'
@@ -310,7 +353,8 @@ class LectureRenderer:
             )
         earlier = "".join(earlier_parts)
         stubs = "".join(
-            f'<li><code>{e(s["name"])}</code><span class="where">{e(s["where"])}</span><span class="ref">{e(s["ref"])}</span></li>'
+            f'<li><code>{e(s["name"])}</code><span class="where">{e(s["where"])}</span><span class="ref">{e(s["ref"])}</span>'
+            + (f'<span class="muted">{t("旧式手填签名 · 未核验")}</span>' if s.get("unverified_signature") else '') + '</li>'
             for s in step.get("stubs", [])
         )
         over = f'<span class="over">{t("超出建议行数")}</span>' if visible > VISIBLE_BUDGET else ""
@@ -325,7 +369,7 @@ class LectureRenderer:
 <div class="block place"><h3>{t("放在哪里")}</h3><p>{e(step.get('place', ''))}</p></div>
 {earlier}
 {self.discussion(step)}
-<footer class="step-foot"><button class="cmd primary" data-cmd="tutor next">{t("下一步")}</button><button class="cmd" data-cmd="tutor retell {self.lecture['id']}/{sid}">{t("重讲")}</button></footer>
+<footer class="step-foot"><button class="cmd primary" data-cmd="tutor next {self.lecture['id']}/{sid}.r{current}">{t("下一步")}</button><button class="cmd" data-cmd="tutor retell {self.lecture['id']}/{sid}.r{current}">{t("重讲")}</button></footer>
 </section>"""
         return section, visible, state
 
@@ -382,8 +426,7 @@ def render_lecture(lecture, facts, target, discussion_path=None, output_language
             stats[state + "_steps"].append(step["id"])
         if visible > VISIBLE_BUDGET:
             stats["over_budget"].append(step["id"])
-    step_ids = {s["id"] for s in lecture["steps"]}
-    unmatched = [r for r in matched if r["step"] not in step_ids]
+    unmatched = [r for r in matched if not any(record_matches(lecture, s, r) for s in lecture["steps"])]
     outline = "".join(
         f'<li><a href="#{s["id"]}"><span class="layer">{e(s.get("layer", ""))}</span>{e(s.get("short") or s["goal"])}</a></li>'
         for s in lecture["steps"]
@@ -392,7 +435,7 @@ def render_lecture(lecture, facts, target, discussion_path=None, output_language
     if stats["stale_steps"]:
         warning += f'<p>{t("这些步骤的源码已变化，讲解待复核：")}{e(", ".join(stats["stale_steps"]))}</p>'
     if unmatched:
-        warning += f'<p>{t("有讨论记录指向已不存在的步骤，原文保留在页面底部。")}</p>'
+        warning += f'<p>{t("部分讨论无法对应当前步骤、修订或源码身份，全文保留在页面底部。")}</p>'
     leftovers = "".join(
         f'<li>{e(r["step"])}.r{e(r["r"])} · {e(r.get("time", ""))}<blockquote>{e(r.get("quote", ""))}</blockquote>'
         f'<p>{e(r.get("question") or r.get("text", ""))}</p><p class="answer">{e(r.get("answer", ""))}</p></li>'

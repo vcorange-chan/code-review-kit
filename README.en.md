@@ -30,7 +30,7 @@ For a standalone installation, run `install.ps1` on Windows, or `python skills/c
 Pi:
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.7.1
+pi install git:github.com/vcorange-chan/code-review-kit@v0.8.0
 ```
 
 Use `/skill:code-review-kit`. For Cowork, download `code-review-kit-skill.zip` from GitHub Releases and upload it under Customize → Skills; code execution must be enabled. The uploaded package is self-contained and installs dependencies in its actual execution environment on first extraction. It does not assume access to the host machine's drive paths. See [installation notes](skills/code-review-kit/references/install.md).
@@ -153,6 +153,12 @@ code-review discuss --lecture my-lecture.json --discussion my-discussion.jsonl -
 ```
 
 See the [lecture format](skills/copy-tutor/references/lecture-format.md). Cowork users upload `copy-tutor-skill.zip`, which bundles the same tool.
+
+New lectures separate reading progress, fixed program behavior and counterfactual comparisons instead of presenting revealed lines as a patch history. Use `function/business --source-ref COMMIT` to read a fixed Git commit without committing, staging or switching the working tree. Local facts retain verifiable snapshots of relevant files; full files stay outside default model packets. After `lecture --accept-new` locks the source identity, another snapshot cannot be substituted; legacy lectures retain an unlocked-source notice.
+
+`tutor add` appends one step draft; `tutor retell` atomically archives the complete previous view; `tutor select` computes fold ranges and derives real signatures; `tutor packet` produces bounded, reusable step evidence. `status/next/resume` preserve reading position without claiming mastery. Full selections and discussions are retained, old revisions keep their own bindings, and unmatched records remain readable in full. See [Tutor operations](skills/copy-tutor/references/operations.md).
+
+Event-driven example: extract `events-business.json` and use `events-lecture.zh.json` to follow a late result through the state guard to the view label. Source is `events.py`; all three files are under `examples/document-pipeline`. The example is explained statically and includes neither a real UI nor runtime verification.
 
 ## Pre-release privacy checks
 

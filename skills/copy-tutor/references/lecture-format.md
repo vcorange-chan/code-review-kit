@@ -8,7 +8,7 @@
 
 | 字段 | 说明 |
 | --- | --- |
-| `schema_version` | 固定为 `1` |
+| `schema_version` | 新讲义为 `2`；旧 `1` 兼容显示。新格式不允许用 change 叙述源码补丁历史。 |
 | `id` | 讲义身份，只用字母、数字、`_`、`-`，生成后不再更改。讨论记录靠它和讲义对应。 |
 | `output_language` | `zh` 或 `en`，决定页面固定文字的语言 |
 | `title`, `business` | 标题，以及这项业务的一句话描述 |
@@ -20,6 +20,7 @@
 | `notice` | 页首说明，写这份讲义已知的局限 |
 | `not_covered` | 本讲义不覆盖的范围（数组） |
 | `steps` | 步骤数组，顺序就是教学顺序 |
+| `outline` | 可选，确认后的路线，含稳定 id、node、short，可含 show。尚未讲解的步骤不写正文；材料包可读取这些计划节点。 |
 
 ## 步骤字段
 
@@ -39,11 +40,16 @@
 | `defer`, `remainder` | 可选。自动折叠时，defer 提供显式范围去向；remainder 给其余范围说明。无依据时标为待安排。 |
 | `stubs` | 可选。本步只用签名的函数，写 `{node, ref}`，工具从 facts 派生真实签名和位置；旧 `{name, where, ref}` 仅兼容。 |
 | `decisions` | 可选，最多 3 项，每项是 `{line, text, otherwise?}`。`line` 必须是显示出来的行。 |
-| `change` 或 `consider` | 可选，二选一。`change` 是 `{before, after}`；`consider` 是字符串数组 |
+| `progress` | 可选，`{seen, focus, next}`，描述展示范围的变化，不是源码版本演变。 |
+| `behavior` | 可选，`[{when, result, next?}]`，说明固定代码的条件、结果和后续。 |
+| `consider` | 可选，考虑到哪些输入或错误；字符串数组。 |
+| `change` | 仅旧 schema_version:1 兼容，标为旧版对照，不视为真实源码历史。 |
 | `place` | 代码放在哪里，以及需要的 import |
 | `earlier` | 工具维护的完整旧修订，包含正文、show/gaps、stubs、place、源码身份和摘要；不要手工搬运。旧的仅正文格式仍可回看。 |
 
 **校验规则**：节点范围内的每一行，必须恰好属于 `show` 或某个 `gaps` 段，不能遗漏，也不能重复。超过 20 行只给出提示，不算失败。
+
+decisions[].otherwise 显示为“反事实比较”；它比较另一种可能写法，不能假装是曾经存在的源码版本。新步骤只写单步草稿，经 tutor add 追加；重讲经 tutor retell 原子归档，不重写全讲义。
 
 ## 讨论记录
 
@@ -56,6 +62,7 @@
 | `lecture` | 讲义 id |
 | `step`, `r` | 步骤 id，以及讨论针对的第几次讲解 |
 | `evidence_hash` | 记录时该步骤绑定的源码证据 |
+| `source_identity` | 目标修订对应的源码快照身份；不从当前修订借用旧记录的身份。 |
 | `kind` | `ask` 或 `note` |
 | `quote` | 用户所选的原文 |
 | `question`, `answer` | 提问的完整问题和完整回答 |

@@ -94,10 +94,11 @@ def main(argv=None):
     p.add_argument("--answer-file", help="从 UTF-8 文件读取完整回答，避免命令行转义")
     p.add_argument("--text", help="旁注原文")
     p = sub.add_parser("tutor", help="单步骤材料包、原子重讲归档和折叠范围计算")
-    p.add_argument("action", choices=["packet", "retell", "select"])
+    p.add_argument("action", choices=["packet", "add", "retell", "select", "status", "next", "resume"])
     p.add_argument("--lecture", required=True)
-    p.add_argument("--facts", required=True)
-    p.add_argument("--step", required=True)
+    p.add_argument("--facts")
+    p.add_argument("--step")
+    p.add_argument("--state", help="阅读位置 JSON；默认讲义旁的 .state.json")
     p.add_argument("--out")
     p.add_argument("--bytes", type=int, default=12000)
     p.add_argument("--discussion")
@@ -207,12 +208,27 @@ def main(argv=None):
             output({"appended": True, "step": record["step"], "r": record["r"]})
             return 0
         if args.command == "tutor":
-            from .tutor import retell, find_step, prepare_step, step_packet, write_packet
+            from .tutor import retell, append_step, find_step, prepare_step, step_packet, write_packet, cursor_status, move_cursor
             from .lecture import read_discussion
 
             lecture = read_json(args.lecture)
+            state_path = args.state or str(Path(args.lecture).with_suffix(".state.json"))
+            if args.action in {"status", "next", "resume"}:
+                if args.action == "status":
+                    output(cursor_status(lecture, state_path))
+                else:
+                    if not args.step or args.expected_revision is None:
+                        raise ValueError("Navigation needs --step and --expected-revision")
+                    output(move_cursor(lecture, state_path, args.action, args.step, args.expected_revision))
+                return 0
+            if not args.facts or not args.step:
+                raise ValueError("This tutor action needs --facts and --step")
             facts = read_json(args.facts)
-            if args.action == "retell":
+            if args.action == "add":
+                if not args.replacement:
+                    raise ValueError("add needs --replacement containing one step draft")
+                output(append_step(args.lecture, facts, args.step, read_json(args.replacement)))
+            elif args.action == "retell":
                 if not args.replacement or args.expected_revision is None:
                     raise ValueError("retell needs --replacement and --expected-revision")
                 output(retell(args.lecture, facts, args.step, read_json(args.replacement), args.expected_revision, args.reason))

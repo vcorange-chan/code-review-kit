@@ -2,6 +2,27 @@
 
 下列命令都通过同一 `scripts/review.py` 核心运行。HTML 复制的是发给对话的消息，不要把选文拼成 shell 命令执行。
 
+## 单步追加与阅读位置
+
+先创建含 id、schema_version:2、outline 和空 steps 的讲义骨架。每次只写一块 draft.json：
+
+```sh
+python scripts/review.py tutor add --lecture lecture.json --facts kit/facts.json --step s1 --replacement draft.json
+python scripts/review.py lecture --lecture lecture.json --facts kit/facts.json --discussion discussion.jsonl
+```
+
+工具只追加一个未出现的步骤，检查大纲节点与证据，不要求 AI 重新输出整份讲义。旧讲义来源未锁定时，先用 lecture --accept-new 显式绑定；已有证据不匹配不能借此换绑。
+
+页面消息例如 `tutor next lesson-id/s1.r2`。核对所属讲义后：
+
+```sh
+python scripts/review.py tutor next --lecture lecture.json --step s1 --expected-revision 2
+python scripts/review.py tutor status --lecture lecture.json
+python scripts/review.py tutor resume --lecture lecture.json --step s1 --expected-revision 2
+```
+
+状态默认存 lecture.state.json，可用 --state 覆盖。next 记录位置，返回下一节点；needs_authoring 表示该步在大纲里但还没有正文。status 只读；resume 用于用户明确选择返回某步。重复 next 不再次推进，过期修订被拒绝。阅读位置不是已读证明或掌握记录。侧问/旁注/重讲都不自动改变主线位置。
+
 ## 单步骤材料
 
 ```sh
