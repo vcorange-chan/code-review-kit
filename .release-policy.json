@@ -102,7 +102,7 @@
     "tests/test_reviewkit.py": "90d04f32ab103b3f6e75efc7454cce3d57f6ecf34b88e376f4b10e79a7f482f4",
     "tests/test_source_identity.py": "365e428c36c79282fac560f4b4ee3d14c5e71afebefcaf768484409bb550bfc4",
     "tests/test_source_snapshots.py": "e589f3df84c1458bf247fc855c448266e4160e251d0fc601febcc2db236148bb",
-    "tests/test_tutor.py": "5bdb19e33099b7005b82c39074f71dc0ab5a130aec9588fc0fab8acb33874f0e"
+    "tests/test_tutor.py": "a550a62b35e7f7515d37c53b7483f6a68307d2be78b509fdaabf5cd02e2d7516"
   },
   "public_demo": {
     "manifest": "examples/document-pipeline/business.json",

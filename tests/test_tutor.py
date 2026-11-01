@@ -45,7 +45,7 @@ class TutorTests(unittest.TestCase):
             self.assertEqual(old[key], before[key])
         with self.assertRaisesRegex(ValueError, "Outdated"):
             retell(self.path, self.facts, "s1", {"goal": "retry"}, 1)
-        self.assertEqual(json.loads(self.path.read_text())["steps"][0]["r"], 2)
+        self.assertEqual(json.loads(self.path.read_text(encoding="utf-8"))["steps"][0]["r"], 2)
 
     def test_invalid_retell_preserves_original_and_releases_lock(self):
         raw = self.path.read_bytes()
