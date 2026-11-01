@@ -276,6 +276,9 @@ class LectureRenderer:
         )
 
     def step(self, step, index, total):
+        from .tutor import prepare_step
+
+        step = prepare_step(self.lecture, self.facts, step)
         t = self.t
         sid = step["id"]
         node = self.nodes[step["node"]]
@@ -289,12 +292,23 @@ class LectureRenderer:
         }[state]
         current = step.get("r", 1)
         upper, lower = self.prose(sid, step)
-        earlier = "".join(
-            f'<details class="earlier" data-revision="{old["r"]}" data-goal="{e(old["goal"])}"><summary>{t("第 {} 次讲解").format(old["r"])}'
-            + (f'（{t("重讲原因")}：{e(old["reason"])}）' if old.get("reason") else "")
-            + "</summary>" + "".join(self.prose(sid, old)) + "</details>"
-            for old in step.get("earlier", [])
-        )
+        earlier_parts = []
+        for old in step.get("earlier", []):
+            old_id = f'{sid}-r{old["r"]}'
+            old_code = ""
+            if "show" in old and "node" in old:
+                old = prepare_step(self.lecture, self.facts, old)
+                old_code = '<div class="code">' + self.code({**old, "id": old_id}, self.nodes[old["node"]])[0] + '</div>'
+            old_upper, old_lower = self.prose(old_id, old)
+            earlier_parts.append(
+                f'<details class="earlier" data-revision="{old["r"]}" data-goal="{e(old["goal"])}"><summary>{t("第 {} 次讲解").format(old["r"])}'
+                + (f'（{t("重讲原因")}：{e(old["reason"])}）' if old.get("reason") else "")
+                + "</summary>" + old_upper + old_code + old_lower
+                + f'<p>{e(old.get("place", ""))}</p>'
+                + ''.join(f'<p><code>{e(s["name"])}</code> {e(s["where"])} {e(s["ref"])}</p>' for s in old.get("stubs", []))
+                + "</details>"
+            )
+        earlier = "".join(earlier_parts)
         stubs = "".join(
             f'<li><code>{e(s["name"])}</code><span class="where">{e(s["where"])}</span><span class="ref">{e(s["ref"])}</span></li>'
             for s in step.get("stubs", [])
@@ -351,6 +365,7 @@ def render_lecture(lecture, facts, target, discussion_path=None, output_language
     records = read_discussion(discussion_path)
     matched = [r for r in records if r["lecture"] == lecture["id"]]
     renderer = LectureRenderer(lecture, facts, matched, language)
+    renderer.facts = facts
     renderer.source_snapshot = facts.get("source_snapshot")
     t = renderer.t
     truncated = facts.get("limits", {}).get("truncated_nodes", [])

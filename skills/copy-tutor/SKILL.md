@@ -55,16 +55,18 @@ metadata:
 5. **响应命令**。用户在页面上点按钮复制命令，或直接输入。`<讲义id>/sN.rK` 表示讲义里第 N 步的第 K 次讲解。
    - `tutor next`：写下一步。
    - `tutor retell <讲义id>/sN`：原位重讲。
-     1. 把当前讲解的 goal、reasons、method、decisions、change/consider，连同重讲原因，移进 `earlier`；
-     2. `r` 加 1，换讲法或例子重写；
-     3. 不自动推进到下一步。
+     1. 用 `tutor packet` 取当前步骤材料，换讲法或例子，只把新讲解写进 replacement JSON；
+     2. 运行 `tutor retell --lecture … --facts … --step sN --expected-revision K --replacement replacement.json --reason "…"`；
+     3. 工具原子保存旧正文、代码范围、签名和位置，并递增修订。不要手工搬运 earlier 或改 r；重新渲染后停留本步。
 
      步骤 id 永不改变或复用，重排步骤也不改 id。
    - 页面会复制 `tutor ask {"target":"<讲义id>/sN.rK","quote":"完整选文"}`；旧式命令也可由你理解。只读这一步的代码行和讲解来回答，不推进主线。回答后运行：
-     `python scripts/review.py discuss --lecture … --discussion … --step sN --revision K --kind ask --quote "引文" --question "…" --answer-file <回答文件>`
+     `python scripts/review.py discuss --lecture … --discussion … --record-file question.json`
      然后重新渲染。
    - `tutor note <讲义id>/sN.rK "引文" 理解`：用 `discuss … --kind note --text "…"` 原样记录用户的话。
    - 讨论记录只能追加。只有用户明确要求时才可以删除；整理时不能用摘要替换原始记录。
+
+机械操作和可复制命令按需读取 [references/operations.md](references/operations.md)。写每步前运行 `tutor packet --lecture … --facts … --step sN --out step-packet.json --bytes 12000`；它只包含本步证据、必要签名及讨论，明确列出遗漏。可传 `--explanations` 复用摘要匹配的 Review 行为解释，不当作动机证据。包不够才补取特定节点，不重读仓库。重复包直接复用。
 
 ## 讲解规则
 
@@ -78,11 +80,12 @@ metadata:
 - **实现方法**：讲到方法和关键工具、参数为止，例如“用 ffmpeg 的 -vn 去掉视频流”。语法、参数含义、概念细节留给用户提问。可以按本次对话的提问调整详略，但不要据此建立能力画像：提问少不等于水平高。
 - **代码节选**：
   - 每步约 20 行，只是软预算。多行表达式保持完整；新手可以少看几行。
-  - 节点里的其余行都要折叠，并写明去向。
+  - 只指定 show，工具计算其余折叠范围；从其他步骤找已有去向。需要时给 defer 或 remainder；未知去向保留“待安排”，不要编造。旧的显式 gaps 继续兼容。
   - 与课程无关的大段代码标上 `out: true`，页面会把它们合并成一条“本课程不涉及”，不让读者逐条看去向说明。
 - **关键决策**：只写真正存在取舍的地方，最多 3 处，没有就不写。不要为了凑数编一个明显更差的替代方案。
 - **行为变化**：写“之前 / 现在”。错误路径步骤改写成“考虑到……所以……”的列表（`consider`）。
 - **放在哪里**：写明文件、排在哪个函数前后、需要的 import（从事实的 `imports` 里取），让读者能自行复现。
+- 被调函数的占位引用用 `{node, ref}`，工具从快照派生真实签名，不在讲义中手写代码或签名。
 
 ## 运行学习项目
 

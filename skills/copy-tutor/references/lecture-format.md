@@ -35,12 +35,13 @@
 | `reasons` | 数组，每项是 `{kind, text, support, limits?}`。`kind` 只能是 `recorded`、`inferred`、`teaching` 之一，`support` 必填。 |
 | `method` | 字符串数组 |
 | `show` | 显示的行段，如 `[[a, b], …]`，用文件中的绝对行号 |
-| `gaps` | 折叠段，每项是 `{lines: [a, b], label, ref?, out?}`。`out: true` 表示与本课程无关，相邻的这类段会合并显示。 |
-| `stubs` | 可选。本步只用签名的函数，每项是 `{name, where, ref}` |
+| `gaps` | 可选。折叠段，每项是 `{lines: [a, b], label, ref?, out?}`。省略时自动算 show 补集，并查其他步骤去向。`out: true` 为课程外；相邻段合并。 |
+| `defer`, `remainder` | 可选。自动折叠时，defer 提供显式范围去向；remainder 给其余范围说明。无依据时标为待安排。 |
+| `stubs` | 可选。本步只用签名的函数，写 `{node, ref}`，工具从 facts 派生真实签名和位置；旧 `{name, where, ref}` 仅兼容。 |
 | `decisions` | 可选，最多 3 项，每项是 `{line, text, otherwise?}`。`line` 必须是显示出来的行。 |
 | `change` 或 `consider` | 可选，二选一。`change` 是 `{before, after}`；`consider` 是字符串数组 |
 | `place` | 代码放在哪里，以及需要的 import |
-| `earlier` | 旧的讲解，每项是 `{r, reason?, goal, reasons, method, decisions, change/consider}` |
+| `earlier` | 工具维护的完整旧修订，包含正文、show/gaps、stubs、place、源码身份和摘要；不要手工搬运。旧的仅正文格式仍可回看。 |
 
 **校验规则**：节点范围内的每一行，必须恰好属于 `show` 或某个 `gaps` 段，不能遗漏，也不能重复。超过 20 行只给出提示，不算失败。
 

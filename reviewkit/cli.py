@@ -84,14 +84,29 @@ def main(argv=None):
     p = sub.add_parser("discuss", help="向讨论记录追加一条提问或旁注，身份字段取自讲义")
     p.add_argument("--lecture", required=True)
     p.add_argument("--discussion", required=True)
-    p.add_argument("--step", required=True)
-    p.add_argument("--kind", choices=["ask", "note"], required=True)
-    p.add_argument("--quote", default="")
+    p.add_argument("--step")
+    p.add_argument("--kind", choices=["ask", "note"])
+    p.add_argument("--record-file", help="结构化讨论 JSON；身份字段仍由讲义派生")
+    p.add_argument("--quote")
     p.add_argument("--revision", type=int, help="讨论针对的讲解修订；默认当前修订")
     p.add_argument("--question")
     p.add_argument("--answer")
     p.add_argument("--answer-file", help="从 UTF-8 文件读取完整回答，避免命令行转义")
     p.add_argument("--text", help="旁注原文")
+    p = sub.add_parser("tutor", help="单步骤材料包、原子重讲归档和折叠范围计算")
+    p.add_argument("action", choices=["packet", "retell", "select"])
+    p.add_argument("--lecture", required=True)
+    p.add_argument("--facts", required=True)
+    p.add_argument("--step", required=True)
+    p.add_argument("--out")
+    p.add_argument("--bytes", type=int, default=12000)
+    p.add_argument("--discussion")
+    p.add_argument("--explanations")
+    p.add_argument("--revision", type=int)
+    p.add_argument("--replacement", help="新讲解 JSON，不能含身份或历史字段")
+    p.add_argument("--selection", help="只需 show、可选 defer/remainder 的 JSON")
+    p.add_argument("--expected-revision", type=int)
+    p.add_argument("--reason", default="")
     for name in ["function", "business", "render", "packet", "lecture"]:
         command_parser = sub.choices[name]
         command_parser.add_argument(
@@ -174,21 +189,48 @@ def main(argv=None):
         if args.command == "discuss":
             from .lecture import discuss
 
-            answer = (
-                Path(args.answer_file).read_text(encoding="utf-8") if args.answer_file else args.answer
-            )
+            data = read_json(args.record_file) if args.record_file else {}
+            for key in ["step", "kind", "quote", "revision", "question", "answer", "text"]:
+                value = getattr(args, key)
+                if value is not None:
+                    data[key] = value
+            if not data.get("step") or not data.get("kind"):
+                raise ValueError("Discussion needs step and kind")
+            if args.answer_file:
+                data["answer"] = Path(args.answer_file).read_text(encoding="utf-8")
             record = discuss(
                 read_json(args.lecture),
                 args.discussion,
-                args.step,
-                args.kind,
-                args.quote,
-                args.question,
-                answer,
-                args.text,
-                args.revision,
+                data["step"], data["kind"], data.get("quote", ""), data.get("question"),
+                data.get("answer"), data.get("text"), data.get("revision"),
             )
             output({"appended": True, "step": record["step"], "r": record["r"]})
+            return 0
+        if args.command == "tutor":
+            from .tutor import retell, find_step, prepare_step, step_packet, write_packet
+            from .lecture import read_discussion
+
+            lecture = read_json(args.lecture)
+            facts = read_json(args.facts)
+            if args.action == "retell":
+                if not args.replacement or args.expected_revision is None:
+                    raise ValueError("retell needs --replacement and --expected-revision")
+                output(retell(args.lecture, facts, args.step, read_json(args.replacement), args.expected_revision, args.reason))
+            elif args.action == "select":
+                if not args.selection or not args.out:
+                    raise ValueError("select needs --selection and --out")
+                step = {**find_step(lecture, args.step), **read_json(args.selection)}
+                if "gaps" not in read_json(args.selection):
+                    step.pop("gaps", None)
+                prepared = prepare_step(lecture, facts, step)
+                write_json(args.out, {k: prepared[k] for k in ["show", "gaps", "stubs"]})
+                output({"selection": str(Path(args.out).resolve()), "lecture_changed": False})
+            else:
+                if not args.out:
+                    raise ValueError("packet needs --out")
+                packet = step_packet(lecture, facts, args.step, args.bytes, read_discussion(args.discussion),
+                                     read_json(args.explanations) if args.explanations else None, args.revision)
+                output(write_packet(args.out, packet))
             return 0
         if args.command == "pin-sources":
             path = Path(args.manifest).resolve()

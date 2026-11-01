@@ -65,6 +65,7 @@ include reviewkit/templates/lecture.js
 include reviewkit/templates/review.css
 include reviewkit/templates/review.html
 include reviewkit/templates/review.js
+include reviewkit/tutor.py
 include schemas/business.schema.json
 include schemas/explanations.schema.json
 include scripts/build_dist.py
@@ -81,6 +82,7 @@ include skills/code-review-kit/scripts/review.py
 include skills/code-review-kit/scripts/setup.py
 include skills/copy-tutor/SKILL.md
 include skills/copy-tutor/references/lecture-format.md
+include skills/copy-tutor/references/operations.md
 include skills/copy-tutor/scripts/_location.py
 include skills/copy-tutor/scripts/review.py
 include skills/copy-tutor/scripts/setup.py
@@ -94,3 +96,4 @@ include tests/test_review_fixes.py
 include tests/test_reviewkit.py
 include tests/test_source_identity.py
 include tests/test_source_snapshots.py
+include tests/test_tutor.py
