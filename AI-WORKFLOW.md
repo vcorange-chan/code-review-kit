@@ -1,5 +1,7 @@
 # AI 调用协议
 
+入口不明时先用 `locate --query 字面线索`，仅读限额 locate.packet.json，再用 `dossier --facet ... --bytes ...` 查看目标函数的必要栏目，不通读 facts。自然语言到线索由 AI 处理，工具离线检索并保留候选和未知，不猜实际分派。跨轮调查可用 investigate 保存目标、假设、支持/反证、发现和待查问题；完整修订只追加，个人记录默认不进入 HTML。所有入口共用[调查协议](reviewkit/research-workflow.md)与固定模板，不另写搜索器、记录格式或页面。
+
 按代码块顺序解释，略过语法，写清进入数据、执行者、判断条件（两条分支）、结果和下一步。跨文件调用写明由谁调用谁、传什么、返回后从哪继续；不要只列源码链接或用“检查参数”等短句代替解释。AI 处理自然语言、工具处理命令和 AI 补解释要分清。steps 可用 actor/input/result/next；source_index 配合 offset/end_offset 为块级来源定位。用具体请求贯穿复杂流程，不虚构实际运行结果。
 
 使用已安装的 `code-review`，或执行 `python review.py`。Skill 内使用其 `scripts/review.py`。不要为例行 review 重写页面、安装浏览器或建立新的运行实验。

@@ -1,6 +1,6 @@
 ---
 name: code-review-kit
-description: Generate interactive source-code and business-flow review HTML with collapsible input, implementation, output, error and degradation cards. Use when mapping a function or business workflow, or updating an existing review. Supports Rust, Python, Dart and mixed-language business cards; other files can be cited as context.
+description: Locate business code, inspect function dossiers, preserve evidence-linked investigations, and generate interactive source-code and business-flow review HTML with collapsible cards. Use when mapping, investigating or updating a function or business workflow. Supports Rust, Python, Dart and mixed-language business cards; other files can be cited as context.
 metadata:
   runtime: Python 3.11+; pip access for first source-extraction setup. Rendering facts uses the standard library.
 ---
@@ -14,6 +14,7 @@ Use the bundled local program instead of rewriting HTML or reading the whole rep
 Choose output language from the user's explicit instruction first, otherwise the natural-language prompt (Chinese → zh, English → en; ignore code and paths when deciding). Pass `--output-language zh|en` to function/business/render/packet. This is separate from source `--language auto|rust|python|dart` (default auto); an explicit source language narrows indexing. Standalone callers can use `--prompt` for automatic output-language detection.
 
 1. Run `python scripts/review.py doctor` once. If dependencies are missing, run `python scripts/setup.py`; do not copy native dependencies from another OS.
+   If the entry is unknown, use `locate --repo REPO --query LITERAL_CLUE --out OUTPUT`, then read only `locate.packet.json`. Natural language → clue selection is your job; the offline locator does literal matching, not semantic understanding. Inspect the chosen function with `dossier --facts OUTPUT/facts.json --symbol ID --facet calls --out DOSSIER --bytes 12000`. All eight facets are paged evidence, not runtime proof. Keep unresolved calls and truncation explicit. Read [investigation operations](references/investigation.md) only when locating or recording an investigation.
 2. For a function, run `python scripts/review.py function --repo REPO --symbol SYMBOL --file RELATIVE_FILE --out OUTPUT`.
 3. For a business, reuse its manifest and explanations: `python scripts/review.py business --manifest FLOW.json --repo REPO --explanations NOTES.json --out OUTPUT`. Use `file + symbol` for Rust/Python/Dart anchors under one common repository root; old line anchors can be explicitly migrated with `pin-sources`. Mixed business handoffs must be declared in the manifest, never inferred from same-name functions or assumed FFI/RPC dispatch. For a new business, read [the flow format](references/flow-format.md) and identify only required nodes.
 4. Read the short command summary. If the HTML or explanations are valid, reuse them. Otherwise read only `evidence-packet.json` and `explanations.seed.json`; fill separate explanation JSON. Take extra evidence for an individual node only when needed.

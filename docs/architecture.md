@@ -22,7 +22,13 @@ CLI / Pi / Cowork → 语言适配器 → 事实与证据摘要 → 独立解释
 - `source_identity.py`：只读 Git blob 提取、工作区/提交来源区分、文件原文与摘要、可离线核对的快照身份；不执行 checkout hooks/过滤器。
 - `tutor.py`：单步追加、完整重讲归档、折叠补集、事实签名、单步骤字节预算包与阅读位置。Skill 只编排教学和解释，不手工迁移修订历史。
 
-新增语言实现 `parse / resolve_call / related_types`，输出共享字段并注册适配器。符号、范围、调用状态与来源证据属于共同协议；某种语言的语法和解析策略留在适配器内。第一版不预建尚未使用的语言实现。
+新增语言实现 `parse / resolve_call / related_types / search_sites`，输出共享字段并注册适配器。符号、范围、调用状态与来源证据属于共同协议；某种语言的语法和解析策略留在适配器内。第一版不预建尚未使用的语言实现。
+
+## 业务调查共用核心
+
+`search_sites.py` 与各适配器缓存字符串、注释和导入的位置。`locate.py` 将字面线索映射到候选，保留依据与遗漏数量，文件上下文不冒充函数。`dossier.py` 只读已捕获的 facts，按栏目整理签名、分支、错误、上下游和原文。`evidence.py` 为内容、来源身份和范围生成稳定摘要，并提供连续分页与 UTF-8 字节预算，不重读现场源码。
+
+`investigation.py` 保存本地追加式修订链、假设/未知状态与完整旧判断。证据 ID 有效不等于推理正确；完整历史不以模型摘要替换。`research_cli.py` 是各入口共用的薄编排，`research_render.py` 和 `templates/research.*` 是三视图固定折叠页面。个人调查必须显式包含；HTML 不执行命令或调用模型。详细协议见 [research-workflow](../reviewkit/research-workflow.md)。
 
 自动路由仅按已注册后缀分派；混合索引查找调用候选时按调用者语言过滤。跨语言成功/降级边属于清单声明，不属于自动语法调用图。CLI、Pi、Cowork 共用入口、缓存、解释格式和固定模板。
 

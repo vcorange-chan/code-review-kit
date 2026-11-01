@@ -14,6 +14,7 @@ class LanguageAdapter(Protocol):
     def parse(self, text, file): ...
     def resolve_call(self, call, caller, functions): ...
     def related_types(self, selected, index): ...
+    def search_sites(self, text, file): ...
 
 
 ADAPTERS = {"rust": RustAdapter, "python": PythonAdapter, "dart": DartAdapter}
@@ -21,6 +22,16 @@ ADAPTERS = {"rust": RustAdapter, "python": PythonAdapter, "dart": DartAdapter}
 
 class AutoAdapter:
     language = "auto"
+
+    def search_sites(self, text, file):
+        from pathlib import PurePosixPath
+
+        adapter = next(
+            a
+            for a in self.adapters.values()
+            if PurePosixPath(file).suffix in a.suffixes
+        )
+        return adapter.search_sites(text, file)
 
     def __init__(self):
         self.adapters = {name: cls() for name, cls in ADAPTERS.items()}

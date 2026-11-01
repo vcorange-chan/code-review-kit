@@ -30,6 +30,9 @@ def main(argv=None):
         description="离线提取 Rust/Python/Dart 函数或混合语言业务，生成折叠卡片 HTML。"
     )
     sub = parser.add_subparsers(dest="command", required=True)
+    from .research_cli import add_parsers
+
+    add_parsers(sub, HOME)
     sub.add_parser("doctor", help="检查本地依赖")
     for command in ["function", "business"]:
         p = sub.add_parser(command)
@@ -122,6 +125,12 @@ def main(argv=None):
     started = time.perf_counter()
     resources = ExitStack()
     try:
+        from .research_cli import dispatch
+
+        research = dispatch(args)
+        if research is not None:
+            output(research)
+            return 0
         if args.command == "doctor":
             from pathspec import GitIgnoreSpec
 

@@ -30,7 +30,7 @@ code-review doctor
 Pi：
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.8.0
+pi install git:github.com/vcorange-chan/code-review-kit@v0.9.0
 ```
 
 使用 `/skill:code-review-kit`。Cowork：从 GitHub Release 下载 `code-review-kit-skill.zip`，在 Customize → Skills 上传；需要启用代码执行。上传包是自包含的，首次提取时在实际执行环境安装依赖。它不假定可访问宿主机的盘符。详见 [安装说明](skills/code-review-kit/references/install.md)。
@@ -71,6 +71,30 @@ code-review pin-sources --manifest old-flow.json --repo /path/to/repository --ou
 code-review business --manifest examples/document-pipeline/mixed-business.json --language auto --explanations examples/document-pipeline/mixed-explanations.zh.json --out out/mixed --depth 0
 code-review business --manifest examples/document-pipeline/mixed-business.json --language auto --explanations examples/document-pipeline/mixed-explanations.en.json --output-language en --out out/mixed-en --depth 0
 ```
+
+## 业务定位、函数档案和调查记录
+
+不知道入口在哪时，先用业务词、界面文案、符号或 API 名定位候选。定位不调用模型，由外部 AI 把自然语言请求整理成几个字面检索词；分数是排序规则，不是置信概率。下面示例使用英文输出，改成 `--output-language zh` 即可输出中文。
+
+```sh
+code-review locate --repo examples/document-pipeline --query "Reading failed" --query reduce_event --out out/investigation --output-language en
+code-review dossier --facts out/investigation/facts.json --symbol events.py::reduce_event --facet branches --out out/function-study --bytes 12000
+```
+
+打开 `out/investigation/index.html`：在“业务定位”筛选并选择函数，在“函数档案”折叠查看签名、分支、错误、返回、上下游、相关类型及原文；“调查记录”显示显式载入的个人判断和完整旧历史。页面不调用模型，按钮只复制带身份的提问上下文。
+
+AI 默认只读不超过 12000 UTF-8 字节的 `locate.packet.json`，或按分面取档案；完整证据留在本地，按 `next_offset` 续取。过大的单行明确报告，不静默跳过。零命中、语法错误、截断、未解析调用和上游覆盖限制都保留。
+
+```sh
+code-review investigate import --session out/personal-investigation --input out/investigation/evidence.json
+code-review investigate record --session out/personal-investigation --input record.json --expected-revision 0
+code-review investigate show --session out/personal-investigation --bytes 12000
+code-review investigate render --session out/personal-investigation --facts out/investigation/facts.json --lookup out/investigation/locate.json --out out/personal/index.html
+```
+
+`record.json` 示例：`{"kind":"unknown","text":"失败事件是否会覆盖新请求？","status":"open","author":"user"}`。记录支持目标、计划、假设、发现、未知、旁记和交接；每次修订追加，不覆盖原文。发现必须引用有效证据，解决未知项还需结论；工具验证引用与身份，不代替人判断理由是否成立。不同源码身份会提示，绝不把旧证据换绑成新版本。个人记录默认不加入 HTML，只有显式 `--session` 才载入。
+
+完整参数、证据分类和状态规则见[共用调查协议](reviewkit/research-workflow.md)。三项能力共用 Rust/Python/Dart 适配器及离线核心，Pi/Cowork 不另建实现；Zig/C/Go 等仍留作以后扩展。
 
 ## AI 只补解释，不重写页面
 

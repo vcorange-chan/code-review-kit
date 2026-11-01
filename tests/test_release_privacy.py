@@ -17,6 +17,21 @@ from reviewkit.release_privacy import (
 
 
 class ReleasePrivacyTests(unittest.TestCase):
+    def test_investigation_outputs_are_private_even_if_renamed(self):
+        for value in [
+            {"queries": [], "scope_id": "fictional", "candidates": []},
+            {"dossiers": []},
+            {"source_identities": [], "history": [], "records": []},
+            {"evidence": [{"id": "ev_" + "a" * 64}]},
+        ]:
+            with self.subTest(value=value), self.assertRaises(PrivacyError):
+                check_text(json.dumps(value).encode(), "renamed.json")
+        with self.assertRaises(PrivacyError):
+            check_text(
+                b'<main><section id="investigation"></section></main>', "renamed.html"
+            )
+
+
     def test_generated_report_cannot_hide_as_wheel_metadata(self):
         self.files["README.md"] = b"# Fictional fixture\n"
         (self.root / "README.md").write_bytes(self.files["README.md"])

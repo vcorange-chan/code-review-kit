@@ -72,6 +72,17 @@ def build_index(repo, adapter, cache_root, refresh=False):
             files[name] = {"file_hash": file_hash, **adapter.parse(text, name)}
             parsed += 1
         data = files[name]
+        from .search_sites import SITE_VERSION
+
+        if data.get("search_sites_version") != SITE_VERSION:
+            data["search_sites"] = (
+                adapter.search_sites(
+                    raw.decode("utf-8-sig").replace("\r\n", "\n"), name
+                )
+                if hasattr(adapter, "search_sites")
+                else []
+            )
+            data["search_sites_version"] = SITE_VERSION
         data.setdefault("language", adapter.language)
         for item in data["functions"] + data["types"]:
             item.setdefault("language", data["language"])

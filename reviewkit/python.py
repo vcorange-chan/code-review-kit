@@ -85,6 +85,49 @@ def assigned_names(nodes):
 
 
 class PythonAdapter:
+    def search_sites(self, text, file):
+        import io
+        import tokenize
+
+        result = []
+        try:
+            tree = ast.parse(text, filename=file)
+        except SyntaxError:
+            tree = None
+        for node in ast.walk(tree) if tree else []:
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                result.append(
+                    {
+                        "line": node.lineno,
+                        "end_line": node.end_lineno,
+                        "kind": "string",
+                        "text": node.value,
+                    }
+                )
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                result.append(
+                    {
+                        "line": node.lineno,
+                        "end_line": node.end_lineno,
+                        "kind": "import",
+                        "text": ast.get_source_segment(text, node) or "",
+                    }
+                )
+        try:
+            for token in tokenize.generate_tokens(io.StringIO(text).readline):
+                if token.type == tokenize.COMMENT:
+                    result.append(
+                        {
+                            "line": token.start[0],
+                            "end_line": token.end[0],
+                            "kind": "comment",
+                            "text": token.string,
+                        }
+                    )
+        except (tokenize.TokenError, IndentationError):
+            pass
+        return result
+
     language = "python"
     suffixes = (".py", ".pyi")
     version = "python-ast-1:" + ".".join(map(str, sys.version_info[:2]))

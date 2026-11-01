@@ -15,6 +15,7 @@ metadata:
 
 1. 确认项目、业务和固定提交；已确认的不重复问。Git 项目提取加 `--source-ref COMMIT`，只读 Git 对象，无需用户提交、暂存或切换工作区。非 Git 项目固定工作区快照，不能冒充提交。
 2. 初次检查 `doctor`，缺依赖才运行 `scripts/setup.py`。用 Kit 的 `function --repo … --symbol … --file … --source-ref … --out …` 或 `business --manifest …` 提取；业务清单明确列出必需节点。讲义、讨论和状态放在学习项目之外。
+   入口未知先用 `locate --query 业务词/界面文案`，只读 locate.packet.json；再用 dossier 的所需分面补证据，不通读整个 facts。检索词由外部 AI 选择，候选不是已确认入口。需要跨轮调查时使用[共用调查操作](references/investigation.md)，按证据 ID 保存假设、反证与未知；这与个人问答 discussion 分开，不替换原文、不当作掌握记录。
 3. 从有预算的 Kit 证据包确定具体请求、可观察结果和必须保持的约束，再排大纲请用户确认。不要默认读整份 facts/仓库。“主路径、数据、错误、边界、性能”是检查清单，不是强制课序；事件/UI 先看动作与状态，事务先看约束与恢复。
 4. 按[数据格式](references/lecture-format.md)创建 schema_version:2 的短讲义骨架：稳定 id、scenario/observable/invariants、outline 与空 steps。outline 可包含节点与计划展示范围，先不写全部正文。
 

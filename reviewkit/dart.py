@@ -62,6 +62,20 @@ def import_allows(entry, name):
 
 
 class DartAdapter:
+    def search_sites(self, text, file):
+        from .search_sites import tree_sites
+
+        return tree_sites(
+            text,
+            "dart",
+            {
+                "string_literal": "string",
+                "import_or_export": "import",
+                "comment": "comment",
+                "documentation_comment": "comment",
+            },
+        )
+
     language = "dart"
     suffixes = (".dart",)
     version = "dart-syntax-1"

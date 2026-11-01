@@ -30,7 +30,7 @@ For a standalone installation, run `install.ps1` on Windows, or `python skills/c
 Pi:
 
 ```sh
-pi install git:github.com/vcorange-chan/code-review-kit@v0.8.0
+pi install git:github.com/vcorange-chan/code-review-kit@v0.9.0
 ```
 
 Use `/skill:code-review-kit`. For Cowork, download `code-review-kit-skill.zip` from GitHub Releases and upload it under Customize → Skills; code execution must be enabled. The uploaded package is self-contained and installs dependencies in its actual execution environment on first extraction. It does not assume access to the host machine's drive paths. See [installation notes](skills/code-review-kit/references/install.md).
@@ -71,6 +71,30 @@ The mixed example connects Dart input, Python conversion and a Rust size gate, i
 code-review business --manifest examples/document-pipeline/mixed-business.json --language auto --explanations examples/document-pipeline/mixed-explanations.zh.json --out out/mixed --depth 0
 code-review business --manifest examples/document-pipeline/mixed-business.json --language auto --explanations examples/document-pipeline/mixed-explanations.en.json --output-language en --out out/mixed-en --depth 0
 ```
+
+## Business locator, function dossiers and investigation records
+
+When the entry is unknown, locate candidates using business terms, UI messages, symbols or API names. The locator calls no model; an external AI translates the request into a few literal clues. Scores are ranking rules, not confidence probabilities. The example uses English output; change to `--output-language zh` for Chinese.
+
+```sh
+code-review locate --repo examples/document-pipeline --query "Reading failed" --query reduce_event --out out/investigation --output-language en
+code-review dossier --facts out/investigation/facts.json --symbol events.py::reduce_event --facet branches --out out/function-study --bytes 12000
+```
+
+Open `out/investigation/index.html`: filter and select functions under Business locator; expand signatures, branches, errors, returns, callers/callees, related types and original source in Function dossiers. Investigation records shows explicitly included personal judgments and complete prior history. The page calls no model; buttons only copy identity-bound question context.
+
+By default AI reads only `locate.packet.json` (at most 12000 UTF-8 bytes), or requests a dossier facet. Complete evidence stays local; continue with `next_offset`. Oversized individual rows are reported, never silently skipped. Zero hits, parse failures, truncation, unresolved calls and caller coverage limits remain explicit.
+
+```sh
+code-review investigate import --session out/personal-investigation --input out/investigation/evidence.json
+code-review investigate record --session out/personal-investigation --input record.json --expected-revision 0
+code-review investigate show --session out/personal-investigation --bytes 12000
+code-review investigate render --session out/personal-investigation --facts out/investigation/facts.json --lookup out/investigation/locate.json --out out/personal/index.html
+```
+
+Example `record.json`: `{"kind":"unknown","text":"Can a failed event overwrite a newer request?","status":"open","author":"user"}`. Record goals, plans, hypotheses, findings, unknowns, notes and handoffs. Each revision appends without replacing original text. Findings require valid evidence; resolving unknowns also requires a conclusion. The tool checks references and identity, not whether an argument is sound. Multiple source identities are flagged; old evidence is never rebound to a new version. Personal records are excluded from HTML unless `--session` explicitly includes them.
+
+See the [shared investigation protocol](reviewkit/research-workflow.md) for parameters, evidence categories and states. All three capabilities share the offline Rust/Python/Dart adapters and core across CLI/Pi/Cowork. Zig/C/Go and other languages remain future extensions.
 
 ## AI supplies explanations, not page code
 

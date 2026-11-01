@@ -36,6 +36,23 @@ def belongs(node, fn):
 
 
 class RustAdapter:
+    def search_sites(self, text, file):
+        from .search_sites import tree_sites
+
+        return tree_sites(
+            text,
+            "rust",
+            {
+                "string_literal": "string",
+                "raw_string_literal": "string",
+                "use_declaration": "import",
+                "extern_crate_declaration": "import",
+                "line_comment": "comment",
+                "block_comment": "comment",
+            },
+        )
+
+
     language = "rust"
     suffixes = (".rs",)
     version = "rust-syntax-10"

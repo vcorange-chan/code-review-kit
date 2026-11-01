@@ -11,6 +11,33 @@ def all_functions(index):
     return [f for item in index["files"].values() for f in item["functions"]]
 
 
+def empty_facts(index, depth=0, max_nodes=16):
+    return {
+        "schema_version": 1,
+        "language": index["language"],
+        "repository": index["repository"],
+        "generated_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "root_ids": [],
+        "functions": [],
+        "types": [],
+        "edges": [],
+        "callers": [],
+        "macro_mentions": [],
+        "bindings": {},
+        "source_files": {},
+        "card_evidence": {},
+        "card_files": {},
+        "evidence_hash": digest({}),
+        "index_stats": index["stats"],
+        "limits": {
+            "depth": depth,
+            "max_nodes": max_nodes,
+            "truncated_nodes": [],
+            "resolution": "source_context_only",
+        },
+    }
+
+
 def choose(functions, symbol, file=None):
     normalized = file.replace("\\", "/") if file else None
     found = [

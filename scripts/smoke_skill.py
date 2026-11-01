@@ -144,6 +144,83 @@ with tempfile.TemporaryDirectory() as temp:
         skill.chmod(0o755)
         for path in skill.rglob("*"):
             path.chmod(0o755 if path.is_dir() else 0o644)
+    # Research commands run from the packaged tool, not a developer checkout.
+    found = json.loads(
+        run(
+            skill / "scripts/review.py",
+            "locate",
+            "--repo",
+            ROOT / "examples/document-pipeline",
+            "--query",
+            "reduce_event",
+            "--out",
+            folder / "research",
+            "--cache",
+            folder / "cache",
+        )
+    )
+    assert found["candidates"] == 1 and Path(found["html"]).exists()
+    facet = json.loads(
+        run(
+            skill / "scripts/review.py",
+            "dossier",
+            "--facts",
+            folder / "research/facts.json",
+            "--symbol",
+            "reduce_event",
+            "--facet",
+            "branches",
+            "--out",
+            folder / "dossier",
+            "--bytes",
+            "3000",
+        )
+    )
+    assert facet["operation"] == "function.branches" and facet["rows"]
+    session = folder / "investigation"
+    run(
+        skill / "scripts/review.py",
+        "investigate",
+        "import",
+        "--session",
+        session,
+        "--input",
+        folder / "research/evidence.json",
+    )
+    record = folder / "finding.json"
+    record.write_text(
+        json.dumps(
+            {
+                "kind": "finding",
+                "text": "An event reducer has explicit guards.",
+                "support": [facet["id"]],
+            }
+        ),
+        encoding="utf-8",
+    )
+    saved = json.loads(
+        run(
+            skill / "scripts/review.py",
+            "investigate",
+            "record",
+            "--session",
+            session,
+            "--input",
+            record,
+            "--expected-revision",
+            "0",
+        )
+    )
+    assert saved["revision"] == 1
+    run(
+        skill / "scripts/review.py",
+        "investigate",
+        "render",
+        "--session",
+        session,
+        "--out",
+        folder / "investigation.html",
+    )
     # The tutor ZIP installs alone: its own copy of the tool extracts facts and renders a lecture.
     with zipfile.ZipFile(ROOT / "dist/copy-tutor-skill.zip") as archive:
         archive.extractall(folder)
@@ -182,6 +259,9 @@ with tempfile.TemporaryDirectory() as temp:
         )
     )
     assert lecture["steps"] == 3 and not lecture["stale_steps"] and not lecture["unbound_steps"]
+    tutor_facet = json.loads(run(skill / "scripts/review.py", "dossier", "--facts", folder / "tutor-facts/facts.json",
+                                 "--symbol", "run", "--facet", "signature", "--out", folder / "tutor-dossier", "--bytes", "3000"))
+    assert tutor_facet["operation"] == "function.signature"
     # Exercise the packaged mechanical operations, including a complete old revision.
     lesson = folder / "lesson.json"
     shutil.copyfile(ROOT / "examples/document-pipeline/lecture.zh.json", lesson)
@@ -224,6 +304,7 @@ with tempfile.TemporaryDirectory() as temp:
                 "lecture_steps": lecture["steps"],
                 "event_steps": events["steps"],
                 "tutor_operations_executed": True,
+                "research_operations_executed": True,
             }
         )
     )

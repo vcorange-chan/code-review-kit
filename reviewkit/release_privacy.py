@@ -25,6 +25,12 @@ DENIED_NAMES = {
     "build-stats.json",
     "build-state.json",
     "explanations.seed.json",
+    "locate.json",
+    "locate.packet.json",
+    "dossiers.json",
+    "dossier.packet.json",
+    "evidence.json",
+    "history.jsonl",
 }
 MAX_BYTES = 32 * 1024 * 1024
 SKILL_ARCHIVES = {"code-review-kit-skill.zip": "code-review-kit", "copy-tutor-skill.zip": "copy-tutor"}
@@ -94,6 +100,12 @@ def check_text(data, entry, terms=(), allow_report=False):
         and "data-status=" in text
     ):
         raise PrivacyError("generated-review-html", entry)
+    if (
+        not allow_report
+        and str(entry).endswith(".html")
+        and '<section id="investigation"' in text
+    ):
+        raise PrivacyError("generated-investigation-html", entry)
     try:
         obj = json.loads(text)
     except (ValueError, TypeError):
@@ -103,6 +115,16 @@ def check_text(data, entry, terms=(), allow_report=False):
         or {"root_ids", "card_evidence"} <= obj.keys()
         or {"repository", "functions"} <= obj.keys()
         or {"html", "packet", "index"} <= obj.keys()
+        or {"source_identities", "history", "records"} <= obj.keys()
+        or {"scope_id", "queries", "candidates"} <= obj.keys()
+        or "dossiers" in obj
+        or (
+            isinstance(obj.get("evidence"), list)
+            and any(
+                isinstance(row, dict) and str(row.get("id", "")).startswith("ev_")
+                for row in obj["evidence"]
+            )
+        )
     ):
         raise PrivacyError("review-or-private-report", entry)
 
