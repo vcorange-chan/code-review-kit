@@ -19,6 +19,7 @@ include docs/review-findings.md
 include examples/document-pipeline/business.json
 include examples/document-pipeline/explanations.en.json
 include examples/document-pipeline/explanations.json
+include examples/document-pipeline/lecture.zh.json
 include examples/document-pipeline/mixed-business.json
 include examples/document-pipeline/mixed-explanations.en.json
 include examples/document-pipeline/mixed-explanations.zh.json
@@ -47,6 +48,7 @@ include reviewkit/html_parts.py
 include reviewkit/i18n.py
 include reviewkit/indexer.py
 include reviewkit/languages.py
+include reviewkit/lecture.py
 include reviewkit/python.py
 include reviewkit/release_privacy.py
 include reviewkit/render.py
@@ -56,6 +58,9 @@ include reviewkit/rust_context.py
 include reviewkit/source_links.py
 include reviewkit/storage.py
 include reviewkit/syntax_support.py
+include reviewkit/templates/lecture.css
+include reviewkit/templates/lecture.html
+include reviewkit/templates/lecture.js
 include reviewkit/templates/review.css
 include reviewkit/templates/review.html
 include reviewkit/templates/review.js
@@ -73,10 +78,16 @@ include skills/code-review-kit/references/install.md
 include skills/code-review-kit/scripts/_location.py
 include skills/code-review-kit/scripts/review.py
 include skills/code-review-kit/scripts/setup.py
+include skills/copy-tutor/SKILL.md
+include skills/copy-tutor/references/lecture-format.md
+include skills/copy-tutor/scripts/_location.py
+include skills/copy-tutor/scripts/review.py
+include skills/copy-tutor/scripts/setup.py
 include tests/test_explanation_steps.py
 include tests/test_file_selection.py
 include tests/test_i18n.py
 include tests/test_languages.py
+include tests/test_lecture.py
 include tests/test_release_privacy.py
 include tests/test_review_fixes.py
 include tests/test_reviewkit.py

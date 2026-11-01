@@ -1,5 +1,13 @@
 # Changes
 
+## Unreleased
+
+- Add the copy-tutor skill and core `lecture` / `discuss` commands. Lectures cut code lines from facts snapshots, verify that every line of a node is shown or folded with a destination, and bind each step to its node digest so that source changes are marked for review.
+- Record each reason's kind (recorded, inferred, teaching) together with its support and limits. Decisions are optional. Out-of-scope folds collapse on the page while full coverage is still enforced.
+- Append questions and notes to a separate JSONL file bound to the lecture, step and revision. Show them per step; keep records for missing steps visible; render public lectures without them.
+- Build `copy-tutor-skill.zip` alongside the Review skill. Each ZIP bundles the shared tool, is checked against the release policy, and is executed by the smoke test.
+- Add a fictional bilingual-label lecture example for the document pipeline.
+
 ## 0.7.1
 
 - Keep compact type summaries separate from verbatim source snapshots for all languages; reject conflicting original lines and preserve missing-source notices for legacy facts.

@@ -27,6 +27,7 @@ DENIED_NAMES = {
     "explanations.seed.json",
 }
 MAX_BYTES = 32 * 1024 * 1024
+SKILL_ARCHIVES = {"code-review-kit-skill.zip": "code-review-kit", "copy-tutor-skill.zip": "copy-tutor"}
 HOST_PATH = re.compile(r'(?i)(?:\b[a-z]:[/\\](?![\[<{])[^\s"\']+|/(?:Users|home)/[^/\s<>\[{}]+)')
 
 
@@ -158,7 +159,7 @@ def source_files(root):
     except (subprocess.CalledProcessError, ValueError, FileNotFoundError):
         names = set(read_policy(root)["source_hashes"]) | {POLICY}
     # Catch ignored files that a broad copytree could accidentally package.
-    for folder in ["reviewkit", "skills/code-review-kit"]:
+    for folder in ["reviewkit", *("skills/" + skill for skill in SKILL_ARCHIVES.values())]:
         for path in (root / folder).rglob("*"):
             if path.is_symlink():
                 raise PrivacyError("source-symlink", path.relative_to(root))
@@ -191,15 +192,17 @@ def check_source(root, require_terms=False):
     }
 
 
-def skill_mapping(policy):
+def skill_mapping(policy, skill="code-review-kit"):
+    """Each skill ZIP carries its own folder plus the shared tool, so it installs alone."""
     result = {}
+    prefix = f"skills/{skill}/"
     for name in policy["source_hashes"]:
-        if name.startswith("skills/code-review-kit/"):
-            result["code-review-kit/" + name.removeprefix("skills/code-review-kit/")] = name
+        if name.startswith(prefix):
+            result[skill + "/" + name.removeprefix(prefix)] = name
         elif name.startswith("reviewkit/") or name in {"review.py", "requirements.txt"}:
-            result["code-review-kit/scripts/tool/" + name] = name
+            result[skill + "/scripts/tool/" + name] = name
         elif name == "LICENSE":
-            result["code-review-kit/LICENSE"] = name
+            result[skill + "/LICENSE"] = name
     return result
 
 
@@ -286,8 +289,8 @@ def check_archive(root, asset, terms):
     seen = set()
     entries = {}
     total = 0
-    if name == "code-review-kit-skill.zip":
-        mapping = skill_mapping(policy)
+    if name in SKILL_ARCHIVES:
+        mapping = skill_mapping(policy, SKILL_ARCHIVES[name])
         required = set(mapping)
         kind = "skill"
     elif name == f"code_review_kit-{version}-py3-none-any.whl":

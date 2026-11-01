@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "id": "document-pipeline-run",
+  "output_language": "zh",
+  "title": "文档导入：必需阶段与可选阶段",
+  "business": "run(input)：把一份文档依次交给 14 个阶段处理",
+  "scenario": "导入一份文档 \"report\"；再分别试一份空文档，和一份会让清理阶段失败的文档。",
+  "observable": "成功时得到处理后的文档；必需阶段失败时得到带阶段名的错误；可选阶段失败时导入仍然成功。",
+  "invariants": [
+    "必需阶段失败时，不能把未完成的文档交给后续阶段。",
+    "可选阶段失败不能让整份导入失败。"
+  ],
+  "source": "examples/document-pipeline（虚构的合成示例）",
+  "notice": "这是虚构的合成项目，没有作者说明。所有“根据结果推断”的理由都只基于源码行为。",
+  "not_covered": [
+    "其余 13 个阶段函数（结构与 accept 相同）"
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "short": "主流程：一条直线串起所有阶段",
+      "layer": "主路径",
+      "node": "src/lib.rs::run",
+      "version": "run · 第 1 次",
+      "goal": "先写出主流程：一份文档依次经过各个阶段，每个阶段的输出成为下一个阶段的输入；任何必需阶段失败就停下，把错误交给调用者。",
+      "reasons": [
+        {
+          "kind": "inferred",
+          "text": "每个阶段只依赖上一阶段的结果，所以流程写成一条直线：value 一路被新的结果替换。",
+          "support": "L59–64、L70–73 每一行都把上一行的 value 交给下一个阶段，并重新绑定 value。",
+          "limits": "合成示例没有作者说明，阶段之间是否真的只有这种依赖无法确认。"
+        },
+        {
+          "kind": "inferred",
+          "text": "必需阶段失败时立即返回，满足“不能把未完成的文档交给后续阶段”这条约束。",
+          "support": "L60–64、L70–73 使用 ? 运算符：结果为 Err 时直接从 run 返回这个错误。"
+        }
+      ],
+      "method": [
+        "Rust 的 ? 运算符：Result 为 Ok 时取出其中的值，为 Err 时把错误作为 run 的返回值立即返回。",
+        "用同名的 let 重新绑定（shadowing）接住每一步的新结果，不需要可变变量。"
+      ],
+      "show": [
+        [
+          58,
+          64
+        ],
+        [
+          70,
+          75
+        ]
+      ],
+      "gaps": [
+        {
+          "lines": [
+            65,
+            69
+          ],
+          "label": "可选阶段：失败时保留上一步的结果",
+          "ref": "第 3 步"
+        }
+      ],
+      "stubs": [
+        {
+          "name": "accept(value: &str) -> Result<String, String>",
+          "where": "src/lib.rs L2",
+          "ref": "第 2 步写函数体"
+        },
+        {
+          "name": "open_source、decode、parse、split、commit、collect、finish、read_result",
+          "where": "src/lib.rs L6–57",
+          "ref": "与 accept 结构相同，不展开"
+        }
+      ],
+      "decisions": [
+        {
+          "line": 60,
+          "text": "必需阶段用 ? 传递错误。",
+          "otherwise": "改成 unwrap() 的话，输入不合格时程序会直接崩溃，调用者拿不到可以处理的错误。"
+        }
+      ],
+      "change": {
+        "before": "没有处理流程。",
+        "after": "run(\"report\") 依次经过各阶段，返回 Ok(\"report\")；run(\"\") 在第一个阶段就返回 Err(\"accept failed\")。"
+      },
+      "place": "src/lib.rs 末尾，位于所有阶段函数之后。",
+      "evidence_hash": "3ed8832c500115d39c1d5d2ff240941000c7472a71941df27372bef33a02707b"
+    },
+    {
+      "id": "s2",
+      "short": "第一个阶段：检查输入并交出结果",
+      "layer": "错误路径",
+      "node": "src/lib.rs::accept",
+      "version": "accept · 第 1 次",
+      "goal": "进入第一个阶段：检查这份文档能否进入流程；能就交出一份自己的副本，不能就返回带阶段名的错误。",
+      "reasons": [
+        {
+          "kind": "inferred",
+          "text": "错误信息带上阶段名，调用者不用知道是哪一行出的错，也能分辨失败发生在哪个阶段。",
+          "support": "L3 返回 Err(\"accept failed\")；其他阶段分别返回各自名字的错误。"
+        },
+        {
+          "kind": "teaching",
+          "text": "阶段函数返回 Result，而不是自己打印并退出，相当于把“失败后怎么办”留给调用者 run 决定。第 3 步会看到，同样的 Result 在 run 里有两种处理方式。",
+          "support": "L2 的返回类型；run 对它分别使用 ? 和 unwrap_or。"
+        }
+      ],
+      "method": [
+        "Result<String, String>：成功时带新的文档，失败时带错误文字。",
+        "to_owned()：把借来的 &str 复制成自己拥有的 String，交给下一个阶段。"
+      ],
+      "show": [
+        [
+          2,
+          5
+        ]
+      ],
+      "gaps": [],
+      "consider": [
+        "空文档：直接返回错误（L3）。",
+        "包含标记 error_1 的文档：模拟这个阶段的业务失败（L3）。示例用它来演示错误分支。"
+      ],
+      "place": "src/lib.rs 开头，第一个函数。其余 13 个阶段函数结构相同，只有名字和错误标记不同。",
+      "evidence_hash": "8b88f80869d753727cbc7e192befdfe623b35d36643d730659a57c7a48dd41d8"
+    },
+    {
+      "id": "s3",
+      "short": "回到主流程：可选阶段失败时降级",
+      "layer": "错误路径",
+      "node": "src/lib.rs::run",
+      "version": "run · 第 2 次（回到第 1 步的函数）",
+      "goal": "回到 run：清理、审阅、注释、翻译、预览这五个阶段不是必需的。它们失败时，保留上一步的文档继续往下走。",
+      "reasons": [
+        {
+          "kind": "inferred",
+          "text": "这五个阶段失败只影响文档质量，不影响能否交付，所以采用降级：失败就跳过，满足“可选阶段失败不能让整份导入失败”。",
+          "support": "L65–69 使用 unwrap_or(value)：出错时返回调用前的 value。",
+          "limits": "源码只能说明行为；哪些阶段算可选是业务判断，这里没有作者说明。"
+        }
+      ],
+      "method": [
+        "Result::unwrap_or(默认值)：Ok 时取出新值，Err 时改用默认值，这里就是上一步的文档。"
+      ],
+      "show": [
+        [
+          65,
+          69
+        ]
+      ],
+      "gaps": [
+        {
+          "lines": [
+            58,
+            64
+          ],
+          "label": "接收、读取、解码、解析、拆分（必需阶段）",
+          "ref": "第 1 步已讲"
+        },
+        {
+          "lines": [
+            70,
+            75
+          ],
+          "label": "提交、收集、完成、读取结果，然后返回",
+          "ref": "第 1 步已讲"
+        }
+      ],
+      "decisions": [
+        {
+          "line": 65,
+          "text": "失败时保留旧值，继续执行。",
+          "otherwise": "如果也用 ?，任何一个可选阶段出错，整份文档都会导入失败。"
+        }
+      ],
+      "change": {
+        "before": "任何阶段失败都会中止。",
+        "after": "文档包含 error_6（清理失败）时，run 仍然返回 Ok，只是跳过了清理。"
+      },
+      "place": "run 中 split 之后、commit 之前（L65–69）。",
+      "evidence_hash": "3ed8832c500115d39c1d5d2ff240941000c7472a71941df27372bef33a02707b"
+    }
+  ]
+}

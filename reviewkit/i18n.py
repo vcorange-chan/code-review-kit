@@ -112,6 +112,63 @@ EN = {
 }
 
 
+# Lecture labels live in their own table so short phrases never rewrite review templates.
+LECTURE_EN = {
+    "逐步复现讲义 · 本地生成": "STEP-BY-STEP REBUILD LECTURE · generated locally",
+    "代码行取自事实快照 · 讲解与讨论分开保存 · 默认无运行验证": "Code lines come from the facts snapshot · lecture and discussion are stored separately · no runtime verification by default",
+    "复制为对话消息": "Copy as chat message",
+    "已复制，粘贴到对话中": "Copied. Paste it into the conversation",
+    "复制这段内容": "Copy this text",
+    "讲义：": "Lecture: ",
+    "步骤目标：": "Step goal: ",
+    "源码位置：": "Source location: ",
+    "我选中的原文：": "Selected text: ",
+    "我的问题：": "My question: ",
+    "提问": "Ask",
+    "旁注": "Note",
+    "明确记录": "Recorded",
+    "根据结果推断": "Inferred from the result",
+    "教学上的解释": "Teaching explanation",
+    "依据": "Support",
+    "局限": "Limits",
+    "不这样写会怎样": "Otherwise",
+    "行为变化": "Behavior change",
+    "之前": "Before",
+    "现在": "Now",
+    "考虑到这些情况": "Cases considered",
+    "为什么这样设计": "Why this design",
+    "实现方法": "Method",
+    "关键决策": "Key decisions",
+    "本课程不涉及": "Outside this lecture",
+    "本课程不涉及（{} 段）": "Outside this lecture ({} ranges)",
+    "针对第 {} 次讲解": "On revision {}",
+    "第 {} 次讲解": "Revision {}",
+    "第 {} / {} 步": "Step {} / {}",
+    "显示 {} 行": "{} lines shown",
+    "提问 {} · 旁注 {}": "Questions {} · Notes {}",
+    "问题": "Question",
+    "回答": "Answer",
+    "（尚无回答）": "(no answer yet)",
+    "源码已变化 · 讲解待复核": "Source changed · review required",
+    "尚未绑定证据": "Evidence not bound",
+    "重讲原因": "Reason for retelling",
+    "超出建议行数": "Over the suggested line count",
+    "本步只用签名": "Signatures only in this step",
+    "放在哪里": "Where it goes",
+    "下一步": "Next",
+    "重讲": "Retell",
+    "业务": "Business",
+    "贯穿全课的请求": "Request followed through the lecture",
+    "用户会观察到的变化": "What the user observes",
+    "源码版本": "Source version",
+    "必须保持的约束": "Constraints that must hold",
+    "本讲义不覆盖": "Not covered",
+    "这些步骤的源码已变化，讲解待复核：": "Source changed for these steps; review required: ",
+    "有讨论记录指向已不存在的步骤，原文保留在页面底部。": "Some discussion records point to steps that no longer exist; they are kept at the bottom of the page.",
+    "未匹配的讨论": "Unmatched discussion",
+}
+
+
 def normalize_language(value):
     aliases = {
         "zh-cn": "zh",
@@ -189,15 +246,16 @@ def has_explanations(notes):
 
 
 class Translator:
-    def __init__(self, language="zh"):
+    def __init__(self, language="zh", table=None):
         self.language = normalize_language(language)
+        self.table = EN if table is None else table
 
     def __call__(self, text):
-        return EN.get(text, text) if self.language == "en" else text
+        return self.table.get(text, text) if self.language == "en" else text
 
     def template(self, text):
         """Translate only fixed template resources, before inserting any source or prose."""
         if self.language == "zh":
             return text
-        pattern = "|".join(re.escape(k) for k in sorted(EN, key=len, reverse=True))
-        return re.sub(pattern, lambda m: EN[m.group()], text)
+        pattern = "|".join(re.escape(k) for k in sorted(self.table, key=len, reverse=True))
+        return re.sub(pattern, lambda m: self.table[m.group()], text)

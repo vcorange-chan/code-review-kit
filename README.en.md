@@ -127,6 +127,33 @@ code-review function --repo /path/to/repository --symbol run --out review --link
 
 When source, explanations, manifest and template are unchanged, HTML is reused directly instead of sending the complete report back to a model. Otherwise, the syntax index is reused by file hash. Source is read-only; the tool does not execute the target project or create runtime experiments by default.
 
+## Step-by-step rebuild lectures (copy-tutor)
+
+`skills/copy-tutor` walks a learner through rebuilding one business flow. Each step covers:
+
+- what the step must achieve;
+- which needs and constraints lead to the design;
+- which method implements it;
+- why the lecture later returns to an earlier function.
+
+Lecture JSON contains no code. Lines are cut by number from the facts source snapshot; every line of a node is either shown or folded with a stated destination. Each step binds the node digest, so a source change marks the step for review instead of pairing old prose with new code.
+
+Every reason has one of three kinds, and states its support and limits:
+
+- recorded: the author wrote it down;
+- inferred: worked back from the final code;
+- teaching: an explanation given for clarity.
+
+Questions and notes are appended to a separate JSONL file. Each record is bound to the lecture, step and revision, and can be expanded on the page. Omitting the discussion file renders a public lecture without personal discussion.
+
+```sh
+code-review function --repo examples/document-pipeline --language rust --file src/lib.rs --symbol run --depth 1 --max-nodes 32 --out tutor
+code-review lecture --lecture examples/document-pipeline/lecture.zh.json --facts tutor/facts.json --html tutor/lecture.html
+code-review discuss --lecture my-lecture.json --discussion my-discussion.jsonl --step s1 --kind note --quote "…" --text "…"
+```
+
+See the [lecture format](skills/copy-tutor/references/lecture-format.md). Cowork users upload `copy-tutor-skill.zip`, which bundles the same tool.
+
 ## Pre-release privacy checks
 
 Public examples use fictional projects only. Real manifests, source snapshots, explanations and Reviews stay in ignored local directories. Publication checks validate allowed files and their hashes, scan for host paths, configured private terms and Review data, and verify every ZIP/wheel entry. Public demo HTML must be rebuilt from reviewed synthetic inputs and match byte for byte; renaming a private report does not bypass the check.

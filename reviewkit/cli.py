@@ -71,7 +71,26 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--bytes", type=int, default=24000)
     p.add_argument("--symbol", help="只取 facts 中的某个符号，避免重复发送整个业务")
-    for name in ["function", "business", "render", "packet"]:
+    p = sub.add_parser("lecture", help="用讲义 JSON 与事实快照生成逐步复现讲义 HTML")
+    p.add_argument("--lecture", required=True)
+    p.add_argument("--facts", required=True)
+    p.add_argument("--html", help="默认与讲义同名的 .html")
+    p.add_argument("--discussion", help="只追加的讨论记录 JSONL；省略时生成不含个人讨论的公开讲义")
+    p.add_argument(
+        "--accept-new", action="store_true", help="为尚未绑定的步骤写入当前证据摘要；已绑定的不改"
+    )
+    p = sub.add_parser("discuss", help="向讨论记录追加一条提问或旁注，身份字段取自讲义")
+    p.add_argument("--lecture", required=True)
+    p.add_argument("--discussion", required=True)
+    p.add_argument("--step", required=True)
+    p.add_argument("--kind", choices=["ask", "note"], required=True)
+    p.add_argument("--quote", default="")
+    p.add_argument("--revision", type=int, help="讨论针对的讲解修订；默认当前修订")
+    p.add_argument("--question")
+    p.add_argument("--answer")
+    p.add_argument("--answer-file", help="从 UTF-8 文件读取完整回答，避免命令行转义")
+    p.add_argument("--text", help="旁注原文")
+    for name in ["function", "business", "render", "packet", "lecture"]:
         command_parser = sub.choices[name]
         command_parser.add_argument(
             "--output-language",
@@ -131,6 +150,40 @@ def main(argv=None):
                     ),
                 }
             )
+            return 0
+        if args.command == "lecture":
+            from .lecture import accept_new, render_lecture
+
+            lecture_path = Path(args.lecture).resolve()
+            lecture = read_json(lecture_path)
+            facts = read_json(args.facts)
+            bound = accept_new(lecture, facts) if args.accept_new else []
+            if bound:
+                write_json(lecture_path, lecture)
+            html = Path(args.html) if args.html else lecture_path.with_suffix(".html")
+            language = None if args.output_language == "auto" else args.output_language
+            if args.prompt:
+                language = resolve_language(args.output_language, args.prompt)
+            output({**render_lecture(lecture, facts, html, args.discussion, language), "bound_steps": bound})
+            return 0
+        if args.command == "discuss":
+            from .lecture import discuss
+
+            answer = (
+                Path(args.answer_file).read_text(encoding="utf-8") if args.answer_file else args.answer
+            )
+            record = discuss(
+                read_json(args.lecture),
+                args.discussion,
+                args.step,
+                args.kind,
+                args.quote,
+                args.question,
+                answer,
+                args.text,
+                args.revision,
+            )
+            output({"appended": True, "step": record["step"], "r": record["r"]})
             return 0
         if args.command == "pin-sources":
             path = Path(args.manifest).resolve()
