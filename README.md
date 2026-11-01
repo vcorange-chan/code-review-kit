@@ -127,6 +127,28 @@ code-review function --repo /path/to/repository --symbol run --out review --link
 
 源码、解释、清单和模板均未变时直接复用 HTML，不把完整报告再交给模型。其他时候按文件摘要复用语法索引。源码只读；默认不执行目标项目，不创建运行实验。
 
+## 逐步复现讲义（copy-tutor）
+
+`skills/copy-tutor` 带学习者沿着“逐步搭建”的路线理解一项业务：每一步要做成什么，哪些需求和约束导致了这样的设计，用什么方法实现，以及为什么之后要回到前面的函数补代码。
+
+讲义 JSON 里不放代码。代码行按行号从 facts 的源码快照中切出；节点里的每一行要么显示，要么折叠并写明去向。每一步绑定节点摘要，源码变化后标为“待复核”，不会把旧讲解配上新代码。
+
+理由分三种性质，每条都写明依据与局限：
+
+- 明确记录：作者写下过；
+- 根据结果推断：从最终代码倒推；
+- 教学上的解释：为讲清楚而给出的说法。
+
+提问和旁注只追加到单独的 JSONL 文件，并绑定讲义、步骤和讲解修订号；页面上可以展开回看。省略讨论文件时，生成的是不含个人讨论的公开讲义。
+
+```sh
+code-review function --repo examples/document-pipeline --language rust --file src/lib.rs --symbol run --depth 1 --max-nodes 32 --out tutor
+code-review lecture --lecture examples/document-pipeline/lecture.zh.json --facts tutor/facts.json --html tutor/lecture.html
+code-review discuss --lecture my-lecture.json --discussion my-discussion.jsonl --step s1 --kind note --quote "…" --text "…"
+```
+
+格式说明见 [讲义格式](skills/copy-tutor/references/lecture-format.md)。Cowork 用户上传 `copy-tutor-skill.zip`，它自带同一套工具。
+
 ## 发布前的隐私检查
 
 公开示例只使用虚构项目；真实项目清单、源码快照、解释和 Review 保存在忽略的本地目录。发布检查核对允许文件及其摘要，扫描本机路径、已配置的私有名称和 Review 数据，并逐项验证 ZIP/wheel。公开演示 HTML 必须由已审核的合成输入重建并逐字节匹配；重命名私人报告不能绕过检查。

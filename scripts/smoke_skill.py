@@ -143,6 +143,44 @@ with tempfile.TemporaryDirectory() as temp:
         skill.chmod(0o755)
         for path in skill.rglob("*"):
             path.chmod(0o755 if path.is_dir() else 0o644)
+    # The tutor ZIP installs alone: its own copy of the tool extracts facts and renders a lecture.
+    with zipfile.ZipFile(ROOT / "dist/copy-tutor-skill.zip") as archive:
+        archive.extractall(folder)
+    skill = folder / "copy-tutor"
+    run(skill / "scripts/review.py", "doctor")
+    run(
+        skill / "scripts/review.py",
+        "function",
+        "--repo",
+        ROOT / "examples/document-pipeline",
+        "--language",
+        "rust",
+        "--file",
+        "src/lib.rs",
+        "--symbol",
+        "run",
+        "--depth",
+        "1",
+        "--max-nodes",
+        "32",
+        "--out",
+        folder / "tutor-facts",
+        "--cache",
+        folder / "cache",
+    )
+    lecture = json.loads(
+        run(
+            skill / "scripts/review.py",
+            "lecture",
+            "--lecture",
+            ROOT / "examples/document-pipeline/lecture.zh.json",
+            "--facts",
+            folder / "tutor-facts/facts.json",
+            "--html",
+            folder / "lecture/index.html",
+        )
+    )
+    assert lecture["steps"] == 3 and not lecture["stale_steps"] and not lecture["unbound_steps"]
     print(
         json.dumps(
             {
@@ -153,6 +191,7 @@ with tempfile.TemporaryDirectory() as temp:
                 "dependency_state_outside_skill": True,
                 "languages": doctor["languages"],
                 "mixed_cards": 3,
+                "lecture_steps": lecture["steps"],
             }
         )
     )

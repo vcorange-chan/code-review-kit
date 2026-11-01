@@ -24,6 +24,7 @@ from scripts.build_dist import build
 def names():
     return [
         "code-review-kit-skill.zip",
+        "copy-tutor-skill.zip",
         f"code_review_kit-{version_for(ROOT)}-py3-none-any.whl",
         "code-review-kit-demo.html",
         "code-review-kit-demo-en.html",
@@ -61,8 +62,8 @@ def prepare(folder):
     folder.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as temp:
         staging = Path(temp)
-        build(staging)
-        shutil.copyfile(staging / names()[0], folder / names()[0])
+        for archive in build(staging):
+            shutil.copyfile(archive, folder / archive.name)
         result = subprocess.run(
             [
                 sys.executable,
@@ -78,9 +79,9 @@ def prepare(folder):
         )
         if result.returncode:
             raise PrivacyError("wheel-build-failed", "wheel")
-        shutil.copyfile(staging / names()[1], folder / names()[1])
-    (folder / names()[2]).write_bytes(public_demo(ROOT, "zh"))
-    (folder / names()[3]).write_bytes(public_demo(ROOT, "en"))
+        shutil.copyfile(staging / names()[2], folder / names()[2])
+    (folder / names()[3]).write_bytes(public_demo(ROOT, "zh"))
+    (folder / names()[4]).write_bytes(public_demo(ROOT, "en"))
     (folder / "SHA256SUMS.txt").write_text(checksums(folder), encoding="utf-8")
     return verify(folder)
 

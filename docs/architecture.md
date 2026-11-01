@@ -18,6 +18,7 @@ CLI / Pi / Cowork → 语言适配器 → 事实与证据摘要 → 独立解释
 - `card_render.py`：输入、步骤、输出、分支和源码区域的小型渲染函数。
 - `source_links.py`：默认嵌入源码与真实行号定位；显式外部链接策略。
 - `render.py`：页面组装和证据索引；`reviewkit/templates/` 是唯一样式源。
+- `lecture.py`：copy-tutor 讲义校验、按 facts 快照切取代码行、步骤证据绑定、讨论追加与讲义页面渲染；模板为 `templates/lecture.*`。
 
 新增语言实现 `parse / resolve_call / related_types`，输出共享字段并注册适配器。符号、范围、调用状态与来源证据属于共同协议；某种语言的语法和解析策略留在适配器内。第一版不预建尚未使用的语言实现。
 
