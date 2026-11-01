@@ -3,6 +3,8 @@ from .storage import digest, read_json
 
 
 def build_key(args, index, manifest, notes, home):
+    from .source_identity import git
+
     code = {
         p.relative_to(home).as_posix(): digest(p.read_bytes())
         for p in (home / "reviewkit").rglob("*")
@@ -11,6 +13,8 @@ def build_key(args, index, manifest, notes, home):
     return digest(
         {
             "repository": index["repository"],
+            "git_head": (git(index["repository"], "rev-parse", "HEAD", required=False) or b"").decode().strip(),
+            "git_dirty": (git(index["repository"], "status", "--porcelain", "--untracked-files=normal", required=False) or b"").decode(),
             "adapter": index["adapter"],
             "code": code,
             "command": args.command,

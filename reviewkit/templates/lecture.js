@@ -24,12 +24,17 @@
     if (sel.contains(event.target)) return;
     setTimeout(function () {
       var selection = window.getSelection();
-      var text = selection ? selection.toString().trim() : "";
+      var text = selection ? selection.toString() : "";
       var node = selection && selection.anchorNode;
       var element = node && (node.nodeType === 1 ? node : node.parentElement);
       var step = element && element.closest(".step");
-      if (!text || !step) { sel.hidden = true; current = null; return; }
-      current = { step: step, quote: text.replace(/\s+/g, " ").slice(0, 300) };
+      var endNode = selection && selection.focusNode;
+      var endElement = endNode && (endNode.nodeType === 1 ? endNode : endNode.parentElement);
+      var revision = element && element.closest("[data-revision]");
+      if (!text.trim() || !step || !endElement || endElement.closest(".step") !== step || endElement.closest("[data-revision]") !== revision) {
+        sel.hidden = true; current = null; return;
+      }
+      current = { step: step, revision: revision.dataset.revision, goal: revision.dataset.goal || step.dataset.goal, quote: text };
       var rect = selection.getRangeAt(0).getBoundingClientRect();
       sel.style.left = Math.max(8, rect.left + window.scrollX) + "px";
       sel.style.top = (rect.bottom + window.scrollY + 6) + "px";
@@ -41,18 +46,17 @@
     var kind = event.target.dataset.kind;
     if (!kind || !current) return;
     var step = current.step;
-    var quote = current.quote.replace(/"/g, '\\"');
-    var target = lecture + "/" + step.dataset.step + ".r" + step.dataset.r;
+    var target = lecture + "/" + step.dataset.step + ".r" + current.revision;
     if (kind === "chat") {
       copy([
         "讲义：" + document.title,
-        "步骤目标：" + step.dataset.goal,
+        "步骤目标：" + current.goal,
         "源码位置：" + step.dataset.loc,
         "我选中的原文：" + current.quote,
         "我的问题："
       ].join("\n"));
     } else {
-      copy("tutor " + kind + " " + target + " \"" + quote + "\" ");
+      copy("tutor " + kind + " " + JSON.stringify({target: target, quote: current.quote}) + " ");
     }
     sel.hidden = true;
   });

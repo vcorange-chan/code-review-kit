@@ -55,6 +55,7 @@ include reviewkit/render.py
 include reviewkit/runtime.py
 include reviewkit/rust.py
 include reviewkit/rust_context.py
+include reviewkit/source_identity.py
 include reviewkit/source_links.py
 include reviewkit/storage.py
 include reviewkit/syntax_support.py
@@ -91,4 +92,5 @@ include tests/test_lecture.py
 include tests/test_release_privacy.py
 include tests/test_review_fixes.py
 include tests/test_reviewkit.py
+include tests/test_source_identity.py
 include tests/test_source_snapshots.py

@@ -112,6 +112,28 @@ class LectureTests(unittest.TestCase):
         self.assertIn("Why this design", page)
         self.assertIn('"Step goal: "', page)
 
+    def test_removed_step_keeps_complete_answer(self):
+        discuss(self.lecture, self.log, "s3", "ask", "original", "why", "FULL_ANSWER")
+        self.lecture["steps"].pop()
+        _, page = self.render(discussion_path=self.log)
+        self.assertIn("FULL_ANSWER", page)
+
+    def test_old_discussion_uses_old_evidence_and_keeps_long_quote(self):
+        step = self.lecture["steps"][0]
+        old = copy.deepcopy(step)
+        old.update({"r": 1, "evidence_hash": "old-evidence", "source_identity": "old-source"})
+        step.update({"r": 2, "earlier": [old]})
+        quote = "    indented\n" + "长" * 600
+        record = discuss(self.lecture, self.log, "s1", "note", quote, text="note", revision=1)
+        self.assertEqual((record["evidence_hash"], record["source_identity"], record["quote"]), ("old-evidence", "old-source", quote))
+        _, page = self.render(discussion_path=self.log)
+        self.assertIn('class="earlier" data-revision="1"', page)
+
+    def test_lecture_cannot_swap_locked_snapshot(self):
+        self.lecture["source_identity"] = "different-snapshot"
+        with self.assertRaisesRegex(ValueError, "source identity differs"):
+            self.render()
+
 
 if __name__ == "__main__":
     unittest.main()

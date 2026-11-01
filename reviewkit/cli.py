@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import sys
 import time
+from contextlib import ExitStack
 from .storage import read_json, write_json
 from .languages import ADAPTERS, adapter_for
 from .indexer import build_index
@@ -49,6 +50,7 @@ def main(argv=None):
         p.add_argument("--explanations")
         p.add_argument("--cache", default=str(index_cache(HOME)))
         p.add_argument("--refresh", action="store_true")
+        p.add_argument("--source-ref", help="从指定 Git 提交只读提取，不改动工作区")
         p.add_argument("--link-mode", choices=["embedded", "relative", "local"], default="embedded")
         p.add_argument(
             "--link-template", help="源码链接模板，支持 {path}/{absolute_path}/{line}/{end_line}"
@@ -102,6 +104,7 @@ def main(argv=None):
         )
     args = parser.parse_args(argv)
     started = time.perf_counter()
+    resources = ExitStack()
     try:
         if args.command == "doctor":
             from pathspec import GitIgnoreSpec
@@ -157,14 +160,16 @@ def main(argv=None):
             lecture_path = Path(args.lecture).resolve()
             lecture = read_json(lecture_path)
             facts = read_json(args.facts)
+            before_binding = json.dumps(lecture, sort_keys=True)
             bound = accept_new(lecture, facts) if args.accept_new else []
-            if bound:
-                write_json(lecture_path, lecture)
             html = Path(args.html) if args.html else lecture_path.with_suffix(".html")
             language = None if args.output_language == "auto" else args.output_language
             if args.prompt:
                 language = resolve_language(args.output_language, args.prompt)
-            output({**render_lecture(lecture, facts, html, args.discussion, language), "bound_steps": bound})
+            stats = render_lecture(lecture, facts, html, args.discussion, language)
+            if before_binding != json.dumps(lecture, sort_keys=True):
+                write_json(lecture_path, lecture)
+            output({**stats, "bound_steps": bound})
             return 0
         if args.command == "discuss":
             from .lecture import discuss
@@ -252,6 +257,11 @@ def main(argv=None):
             not isinstance(s, dict) or not isinstance(s.get("symbol"), str) for s in selectors
         ):
             raise ValueError("每个节点需要 symbol，可选 file")
+        from .source_identity import commit_checkout, capture_source
+
+        source_origin = None
+        if args.source_ref:
+            repo, source_origin = resources.enter_context(commit_checkout(repo, args.source_ref))
         index = build_index(
             repo, adapter_for(args.language), Path(args.cache).resolve(), args.refresh
         )
@@ -289,6 +299,9 @@ def main(argv=None):
             else extract(index, selectors, args.depth, args.max_nodes)
         )
         facts["title"] = title
+        capture_source(facts, repo, source_origin, index["adapter"])
+        if source_origin:
+            facts["repository"] = source_origin["repository"]
         facts["output_language"] = args.resolved_output_language
         facts["parse_errors"] = [p for p, data in index["files"].items() if data["parse_error"]]
         if any(f["parse_error"] for f in facts["functions"]):
@@ -343,6 +356,8 @@ def main(argv=None):
     except (ValueError, KeyError, OSError, ImportError) as error:
         output({"ok": False, "error": str(error)[:5000]})
         return 2
+    finally:
+        resources.close()
 
 
 if __name__ == "__main__":

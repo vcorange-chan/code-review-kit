@@ -16,6 +16,7 @@
 | `observable` | 用户会观察到的变化 |
 | `invariants` | 必须始终成立的状态或约束（数组） |
 | `source` | 源码版本说明，例如仓库和 commit |
+| `source_identity` | 工具首次绑定的不可变快照身份；与 facts.source_snapshot.id 不同则拒绝混用。不要手填或改绑。 |
 | `notice` | 页首说明，写这份讲义已知的局限 |
 | `not_covered` | 本讲义不覆盖的范围（数组） |
 | `steps` | 步骤数组，顺序就是教学顺序 |
@@ -46,6 +47,8 @@
 ## 讨论记录
 
 讨论记录存放在 `discussion.jsonl`，每行一条，**只追加**。必须用 `review.py discuss` 写入，因为身份字段要从讲义中读取，不能手填。
+
+提取事实时可使用 `function/business --source-ref COMMIT`。工具直接读取 Git blob，不执行目标代码、checkout 过滤器或 hooks，也不修改用户工作区。facts.source_snapshot 保存相关文件原文、内容摘要、提交核对信息及提取选项；完整文件仅供本地离线校验，不进入默认 AI 包。无 Git 或有改动的工作区标为 workspace，不冒充提交快照。哈希提供一致性检查，不是密码学来源认证。
 
 | 字段 | 说明 |
 | --- | --- |

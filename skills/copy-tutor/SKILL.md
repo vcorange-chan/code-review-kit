@@ -17,13 +17,13 @@ metadata:
 
 1. **确认范围**
    - 确认学习项目路径和一项业务。
-   - 要求学习项目处于**干净的固定提交**：工作区有未提交改动时，先请用户提交或暂存。
+   - 确认固定提交，提取时使用 `--source-ref COMMIT`。工具只读 Git 对象，不要求用户提交、暂存或切换工作区。非 Git 项目可以固定工作区快照，但不能称为提交版本。
    - 讲义目录放在学习项目之外，例如 `<笔记根目录>/<项目>/<业务>/`。
 
 2. **取事实**
    - 第一次使用前运行 `python scripts/review.py doctor`；缺少依赖时运行 `python scripts/setup.py`。
    - 提取事实：
-     - 单个函数：`python scripts/review.py function --repo REPO --symbol SYMBOL --file FILE --out <讲义目录>/kit`
+     - 单个函数：`python scripts/review.py function --repo REPO --source-ref COMMIT --symbol SYMBOL --file FILE --out <讲义目录>/kit`
      - 跨模块业务：用业务清单 `business --manifest …`，在清单里直接列出课程必须包含的节点。
    - 这一步只读源码，不运行项目。
    - 只读需要的事实字段：节点的 `id`、`line`/`end_line`、`calls`、`branches`、`errors`、`returns`、`imports`，以及 `source`。不要通读整个仓库或整份 facts。
@@ -60,7 +60,7 @@ metadata:
      3. 不自动推进到下一步。
 
      步骤 id 永不改变或复用，重排步骤也不改 id。
-   - `tutor ask <讲义id>/sN.rK "引文" 问题`：只读这一步的代码行和讲解来回答，不推进主线。回答后运行：
+   - 页面会复制 `tutor ask {"target":"<讲义id>/sN.rK","quote":"完整选文"}`；旧式命令也可由你理解。只读这一步的代码行和讲解来回答，不推进主线。回答后运行：
      `python scripts/review.py discuss --lecture … --discussion … --step sN --revision K --kind ask --quote "引文" --question "…" --answer-file <回答文件>`
      然后重新渲染。
    - `tutor note <讲义id>/sN.rK "引文" 理解`：用 `discuss … --kind note --text "…"` 原样记录用户的话。

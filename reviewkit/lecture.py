@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 from .html_parts import e
 from .i18n import LECTURE_EN, Translator, resolve_language
+from .source_identity import verify_source
 
 TEMPLATES = Path(__file__).resolve().parent / "templates"
 VISIBLE_BUDGET = 20
@@ -51,9 +52,11 @@ def check_lecture(lecture):
         seen.add(sid)
         check_prose(sid, step)
         current = step.get("r", 1)
+        revisions = set()
         for old in step.get("earlier", []):
-            if not 1 <= old.get("r", 0) < current:
+            if not 1 <= old.get("r", 0) < current or old["r"] in revisions:
                 raise ValueError(f"{sid}: earlier 的 r 必须小于当前 r={current}")
+            revisions.add(old["r"])
             check_prose(f"{sid}.r{old['r']}", old)
 
 
@@ -112,8 +115,11 @@ def discuss(lecture, discussion_path, step_id, kind, quote, question=None, answe
         raise ValueError(f"讲义中没有步骤 {step_id}")
     current = step.get("r", 1)
     revision = current if revision is None else revision
-    if not 1 <= revision <= current:
+    selected = step if revision == current else next((s for s in step.get("earlier", []) if s["r"] == revision), None)
+    if selected is None:
         raise ValueError(f"{step_id} 只有第 1–{current} 次讲解")
+    if kind not in {"ask", "note"}:
+        raise ValueError("Discussion kind must be ask or note")
     if kind == "ask" and not question:
         raise ValueError("提问需要 question")
     if kind == "note" and not text:
@@ -123,7 +129,8 @@ def discuss(lecture, discussion_path, step_id, kind, quote, question=None, answe
         "lecture": lecture["id"],
         "step": step_id,
         "r": revision,
-        "evidence_hash": step.get("evidence_hash"),
+        "evidence_hash": selected.get("evidence_hash"),
+        "source_identity": selected.get("source_identity", lecture.get("source_identity")),
         "kind": kind,
         "quote": quote or "",
         "time": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
@@ -142,6 +149,13 @@ def discuss(lecture, discussion_path, step_id, kind, quote, question=None, answe
 def accept_new(lecture, facts):
     """Bind steps written against the current facts; existing bindings are never replaced."""
     nodes = fact_nodes(facts)
+    identity = verify_source(facts)
+    if identity and not lecture.get("source_identity"):
+        if any(s.get("evidence_hash") and s["evidence_hash"] != nodes[s["node"]]["hash"] for s in lecture["steps"] if s["node"] in nodes):
+            raise ValueError("Cannot lock old explanations to different source evidence")
+        lecture["source_identity"] = identity
+    if lecture.get("source_identity") and lecture["source_identity"] != identity:
+        raise ValueError("Lecture source identity differs; use its original facts snapshot")
     bound = []
     for step in lecture["steps"]:
         if not step.get("evidence_hash") and step["node"] in nodes:
@@ -255,7 +269,7 @@ class LectureRenderer:
                 )
             else:
                 body = f'<p><b>{t("旁注")}</b>{e(r.get("text", ""))}</p>'
-            items.append(f'<li class="d-{e(r["kind"])}">{older}<span class="time">{e(r.get("time", ""))}</span>{quote}{body}</li>')
+            items.append(f'<li class="d-{e(r["kind"])}" data-revision="{e(r["r"])}">{older}<span class="time">{e(r.get("time", ""))}</span>{quote}{body}</li>')
         return (
             f'<details class="discussion"><summary>{t("提问 {} · 旁注 {}").format(asks, notes)}</summary>'
             f'<ol>{"".join(items)}</ol></details>'
@@ -276,7 +290,7 @@ class LectureRenderer:
         current = step.get("r", 1)
         upper, lower = self.prose(sid, step)
         earlier = "".join(
-            f'<details class="earlier"><summary>{t("第 {} 次讲解").format(old["r"])}'
+            f'<details class="earlier" data-revision="{old["r"]}" data-goal="{e(old["goal"])}"><summary>{t("第 {} 次讲解").format(old["r"])}'
             + (f'（{t("重讲原因")}：{e(old["reason"])}）' if old.get("reason") else "")
             + "</summary>" + "".join(self.prose(sid, old)) + "</details>"
             for old in step.get("earlier", [])
@@ -288,7 +302,7 @@ class LectureRenderer:
         over = f'<span class="over">{t("超出建议行数")}</span>' if visible > VISIBLE_BUDGET else ""
         location = f'{node["file"]} L{node["line"]}–{node["end_line"]}'
         section = f"""
-<section class="step" id="{sid}" data-step="{sid}" data-r="{current}" data-goal="{e(step['goal'])}" data-loc="{e(location)}">
+<section class="step" id="{sid}" data-step="{sid}" data-r="{current}" data-revision="{current}" data-goal="{e(step['goal'])}" data-loc="{e(location)}">
 <header class="step-head"><span class="num">{t("第 {} / {} 步").format(index, total)}</span><span class="layer">{e(step.get('layer', ''))}</span>{f'<span class="retold">{t("第 {} 次讲解").format(current)}</span>' if current > 1 else ''}{badge}<span class="ver">{e(step.get('version', ''))}</span></header>
 {upper}
 <div class="block"><h3><code>{e(node['file'])}</code> · {e(node['name'])} · L{node['line']}–{node['end_line']}<span class="count">{t("显示 {} 行").format(visible)}</span>{over}</h3><div class="code">{code}</div></div>
@@ -317,15 +331,27 @@ class LectureRenderer:
             html += f'<div class="notice">{e(lecture["notice"])}</div>'
         if lecture.get("not_covered"):
             html += f'<p class="muted"><b>{t("本讲义不覆盖")}</b>' + "、".join(e(x) for x in lecture["not_covered"]) + "</p>"
+        snapshot = self.source_snapshot
+        if snapshot:
+            html += f'<p class="meta"><b>{t("快照身份")}</b>{e(snapshot["id"])} · {e(snapshot["mode"])}'
+            if snapshot.get("commit"):
+                html += f' · commit {e(snapshot["commit"])}'
+            html += "</p>"
+        if not snapshot or not lecture.get("source_identity"):
+            html += f'<p class="notice">{t("来源未锁定：旧讲义兼容显示，不能据此确认指定提交。")}</p>'
         return html
 
 
 def render_lecture(lecture, facts, target, discussion_path=None, output_language=None):
     check_lecture(lecture)
+    identity = verify_source(facts)
+    if lecture.get("source_identity") and lecture["source_identity"] != identity:
+        raise ValueError("Lecture source identity differs; use its original facts snapshot")
     language = resolve_language(output_language or "auto", fallback=lecture.get("output_language", "zh"))
     records = read_discussion(discussion_path)
     matched = [r for r in records if r["lecture"] == lecture["id"]]
     renderer = LectureRenderer(lecture, facts, matched, language)
+    renderer.source_snapshot = facts.get("source_snapshot")
     t = renderer.t
     truncated = facts.get("limits", {}).get("truncated_nodes", [])
     missing = [s["node"] for s in lecture["steps"] if s["node"] not in renderer.nodes]
@@ -353,7 +379,8 @@ def render_lecture(lecture, facts, target, discussion_path=None, output_language
     if unmatched:
         warning += f'<p>{t("有讨论记录指向已不存在的步骤，原文保留在页面底部。")}</p>'
     leftovers = "".join(
-        f'<li>{e(r["step"])}.r{e(r["r"])} · {e(r.get("quote", ""))} · {e(r.get("question") or r.get("text", ""))}</li>'
+        f'<li>{e(r["step"])}.r{e(r["r"])} · {e(r.get("time", ""))}<blockquote>{e(r.get("quote", ""))}</blockquote>'
+        f'<p>{e(r.get("question") or r.get("text", ""))}</p><p class="answer">{e(r.get("answer", ""))}</p></li>'
         for r in unmatched
     )
     values = {
@@ -382,6 +409,8 @@ def render_lecture(lecture, facts, target, discussion_path=None, output_language
             "other_lecture_records": len(records) - len(matched),
             "truncated_nodes": len(truncated),
             "output_language": language,
+            "source_identity": identity,
+            "source_locked": bool(identity and lecture.get("source_identity") == identity),
         }
     )
     return stats

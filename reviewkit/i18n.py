@@ -114,6 +114,8 @@ EN = {
 
 # Lecture labels live in their own table so short phrases never rewrite review templates.
 LECTURE_EN = {
+    "快照身份": "Snapshot identity",
+    "来源未锁定：旧讲义兼容显示，不能据此确认指定提交。": "Source not locked: legacy lecture; the claimed commit has not been verified.",
     "逐步复现讲义 · 本地生成": "STEP-BY-STEP REBUILD LECTURE · generated locally",
     "代码行取自事实快照 · 讲解与讨论分开保存 · 默认无运行验证": "Code lines come from the facts snapshot · lecture and discussion are stored separately · no runtime verification by default",
     "复制为对话消息": "Copy as chat message",
