@@ -53,6 +53,12 @@ class EvidenceTests(unittest.TestCase):
 
 
 class InvestigationTests(unittest.TestCase):
+    def test_generated_id_never_revises_a_user_named_record(self):
+        investigation.append(self.root, {"id": "r2", "kind": "note", "text": "manual"}, 0)
+        generated = investigation.append(self.root, {"kind": "note", "text": "new"}, 1)
+        self.assertEqual(generated["record"], "r3")
+        self.assertEqual(len(investigation.snapshot(self.root)["records"]), 2)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

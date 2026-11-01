@@ -128,7 +128,13 @@ def append(session, record, expected_revision):
             or not row["text"].strip()
         ):
             raise ValueError("Record needs a known kind and nonempty text")
-        ident = row.setdefault("id", "r" + str(state["revision"] + 1))
+        if "id" not in row:
+            serial = state["revision"] + 1
+            existing = {r["id"] for r in state["records"]}
+            while "r" + str(serial) in existing:
+                serial += 1
+            row["id"] = "r" + str(serial)
+        ident = row["id"]
         if not isinstance(ident, str) or not re.fullmatch(
             r"[A-Za-z0-9_.-]{1,100}", ident
         ):
